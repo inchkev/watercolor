@@ -1,0 +1,13 @@
+include include_top.linux
+
+INCLUDES   = ${INCLUDES_COMMON}
+CFLAGS     = ${CFLAGS_COMMON} ${INCLUDES} -DNDEBUG -DGL_SILENCE_DEPRECATION
+LDFLAGS    = ${LDFLAGS_COMMON}
+EXECUTABLE = ../../bin/simulator
+
+SOURCES    = simulator.cpp \
+						 Grid/StaggeredGrid.cpp \
+						 Watercolor2D.cpp \
+						 src/FIELD_2D.cpp 
+
+include include_bottom.mk

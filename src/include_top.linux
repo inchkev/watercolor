@@ -1,0 +1,6 @@
+LDFLAGS_COMMON = -lGL -lGLU -lglut -lstdc++ -fopenmp
+INCLUDES_COMMON = -I./ -I../ -I../../ -I../../ext/ -I../../src/ -I../../src/util
+
+# fixes the inline exceeded warnings
+CFLAGS_COMMON = -c -Wall -O3 -msse2 -std=c++11 -fopenmp
+CC = g++
