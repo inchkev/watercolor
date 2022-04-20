@@ -11,6 +11,13 @@ public:
   ~Watercolor2D() {};
 
   void step();
+
+  int& x_res()            { return _x_res; };
+  const int x_res() const { return _x_res; };
+  int& y_res()            { return _y_res; };
+  const int y_res() const { return _y_res; };
+  Eigen::ArrayXXf& g()            { return _g; };
+  const Eigen::ArrayXXf g() const { return _g; };
 protected:
   void moveWater();
     void updateVelocities();

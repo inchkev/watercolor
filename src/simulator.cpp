@@ -21,10 +21,10 @@ int x_res = 200;
 int y_res = 200;
 
 // the field being drawn and manipulated
-FIELD_2D field(x_res, y_res);
+Eigen::ArrayXXf field(x_res, y_res);
 
 // the simulation object
-Watercolor2D watercolor_simulator(x_res, y_res);
+Watercolor2D simulator(x_res, y_res);
 
 // the resolution of the OpenGL window -- independent of the field resolution
 int x_screen_res = 850;
@@ -136,10 +136,10 @@ void printGlString(string output)
 ///////////////////////////////////////////////////////////////////////
 // dump the field contents to a GL texture for drawing
 ///////////////////////////////////////////////////////////////////////
-void updateTexture(FIELD_2D &texture)
+void updateTexture(Eigen::ArrayXXf &texture)
 {
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, texture.x_res(), texture.y_res(), 0, GL_LUMINANCE, GL_FLOAT, texture.data());
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, texture.rows(), texture.cols(), 0, GL_LUMINANCE, GL_FLOAT, texture.data());
 
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -165,11 +165,11 @@ void drawGrid()
     dy *= (float)y_res / x_res;
 
   glBegin(GL_LINES);
-  for (int x = 0; x < field.x_res() + 1; x++) {
+  for (int x = 0; x < field.rows() + 1; x++) {
     glVertex3f(x * dx, 0, 1);
     glVertex3f(x * dx, 1, 1);
   }
-  for (int y = 0; y < field.y_res() + 1; y++) {
+  for (int y = 0; y < field.cols() + 1; y++) {
     glVertex3f(0, y * dy, 1);
     glVertex3f(1, y * dy, 1);
   }
@@ -227,7 +227,7 @@ void glutDisplay()
     drawGrid();
 
   // if there's a valid field index, print it
-  if (x_field >= 0 && y_field >= 0 && x_field < field.x_res() && y_field < field.y_res()) {
+  if (x_field >= 0 && y_field >= 0 && x_field < field.rows() && y_field < field.cols()) {
     glLoadIdentity();
 
     // must set color before setting raster position, otherwise it won't take
@@ -306,13 +306,13 @@ void glutKeyboard(unsigned char key, int x, int y)
     printCommands();
     break;
   case 'v':
-    draw_value= !draw_value;
+    draw_values = !draw_values;
     break;
   case 'w': {
     static int count = 0;
     char buffer[256];
     sprintf(buffer, "output_%i.ppm", count);
-    field.writePPM(buffer);
+    /* field.writePPM(buffer); */
     count++;
   } break;
   case 'q':
@@ -341,7 +341,7 @@ void glutMouseClick(int button, int state, int x, int y)
     // zero out a 10x10 square of chemical b
     for (int sx = max(0, x_field - 5); sx < min(x_res, x_field + 5); sx++)
       for (int sy = max(0, y_field - 5); sy < min(y_res, y_field + 5); sy++)
-          b(sx,sy) = 0.0f;
+          simulator.g()(sx,sy) = 1.0f;
 
     // make sure nothing else is called
     return;
@@ -447,26 +447,8 @@ int main(int argc, char **argv)
     float yLength = (float)y_res / x_res;
     eye_center[1] = yLength * 0.5;
   }
-  
-  printCommands();
-  const string GS("GS");
-  const string FHN("FHN");
-  if (argc >= 2) {
-    string argv1(argv[1]);
 
-    if (argv1.compare(GS) == 0) {
-      cout << " Simulating Gray-Scott reaction-diffusion " << endl;
-    } else if (argv1.compare(FHN) == 0) {
-      cout << " Simulating FitzHugh-Nagumo reaction-diffusion " << endl;
-      use_gs = false;
-    } else {
-      cout << " Error: Please specify GS or FHN" << endl;
-      return 1;
-    }
-  } else {
-    cout << " Error: Please specify GS or FHN" << endl;
-    return 1;
-  }
+  printCommands();
 
   runOnce();
 
@@ -484,7 +466,8 @@ int main(int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////
 void runEverytime()
 {
-  watercolor_simulator.step();
+  simulator.step();
+  field = simulator.g();
 }
 
 ///////////////////////////////////////////////////////////////////////

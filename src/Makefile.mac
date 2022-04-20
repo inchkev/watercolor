@@ -3,7 +3,7 @@ include include_top.mac
 INCLUDES   = ${INCLUDES_COMMON}
 CFLAGS     = ${CFLAGS_COMMON} ${INCLUDES} -DNDEBUG -DGL_SILENCE_DEPRECATION
 LDFLAGS    = ${LDFLAGS_COMMON}
-EXECUTABLE = ../../bin/simulator
+EXECUTABLE = ../bin/simulator
 
 SOURCES    = simulator.cpp \
 						 Grid/StaggeredGrid.cpp \
