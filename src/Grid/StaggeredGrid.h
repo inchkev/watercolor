@@ -22,6 +22,9 @@ public:
   int x_res() const { return _x_res; };
   int y_res() const { return _y_res; };
   int axis() const { return _axis; };
+
+  float max() const;
+  float min() const;
 private:
   int _x_res;
   int _y_res;

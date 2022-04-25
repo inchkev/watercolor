@@ -6,6 +6,7 @@
 
 class Watercolor2D
 {
+  // TODO: create a pigment class
 public:
   Watercolor2D(const int x_res, const int y_res);
   ~Watercolor2D() {};
@@ -33,7 +34,7 @@ protected:
   float _dt;
 
   // shallow-water layer
-  Eigen::ArrayXXf _M;         // wet-area mask M
+  Eigen::ArrayXXb _M;         // wet-area mask M
   StaggeredGrid _u;           // velocity in the x direction
   StaggeredGrid _v;           // velocity in the y direction
   Eigen::ArrayXXf _pressure;  // pressure

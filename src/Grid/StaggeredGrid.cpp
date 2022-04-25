@@ -1,4 +1,5 @@
 #include <cmath>
+#include <limits>
 #include "StaggeredGrid.h"
 
 StaggeredGrid::StaggeredGrid(const int x_res, const int y_res, bool axis) :
@@ -7,6 +8,24 @@ StaggeredGrid::StaggeredGrid(const int x_res, const int y_res, bool axis) :
   _axis(axis),
   _data(x_res + 1, y_res * 2 + 1)
 {
+}
+
+float StaggeredGrid::max() const
+{
+  float max_value = std::numeric_limits<float>::min();
+  for (int j = 0; j < y_res * 2 + 1; j++)
+    for (int i = 0; i < x_res + (j % 2); i++)
+      max_value = std::max(max_value, _data(i, j));
+  return max_value;
+}
+
+float StaggeredGrid::min() const
+{
+  float min_value = std::numeric_limits<float>::max();
+  for (int j = 0; j < y_res * 2 + 1; j++)
+    for (int i = 0; i < x_res + (j % 2); i++)
+      min_value = std::min(min_value, _data(i, j));
+  return min_value;
 }
 
 float& StaggeredGrid::operator()(float x, float y)
