@@ -22,18 +22,64 @@ vector<int> &boxesForGauss(int sigma, int n)
 
 void boxBlurH_4(ArrayXXf& scl, ArrayXXf& tcl, int w, int h, int r)
 {
-  tcl = scl;
-  boxBlurH_4(tcl, scl, w, h, r);
-  boxBlurT_4(scl, tcl, w, h, r);
+  const float iarr = 1.0f / (r+r+1);
+  for (int j = 0; j < h; j++)
+  {
+    const float fv = scl(0, j);
+    const float lv = scl(w-1, j);
+    int ti = 0; // pointer to target index
+    int li = 0; // pointer to left index
+    int ri = r; // pointer to right index
+    float val = (r + 1) * fv;
+    int j;
+    for (i = 0; i < r; i++)
+      val += scl(i, j);
+    for (i = 0; i <= r; i++)
+    {
+      val += scl(ri++, j) - fv;           tcl(ti++, j) = val * iarr;
+    }
+    for (i = r + 1; i < w - r; i++)
+    {
+      val += scl(ri++, j) - scl(li++, j); tcl(ti++, j) = val * iarr;
+    }
+    for (i = w - r; i < w; i++)
+    {
+      val += lv           - scl(li++, j); tcl(ti++, j) = val * iarr;
+    }
+  }
 }
 
 void boxBlurT_4(ArrayXXf& scl, ArrayXXf& tcl, int w, int h, int r)
 {
-  const float iarr = 1.0 / (r+r+1);
+  const float iarr = 1.0f / (r+r+1);
+  for (int i = 0; i < w; i++)
+  {
+    int ti = 0; // pointer to target index
+    int li = 0; // pointer to left index
+    int ri = r; // pointer to right index
+    int i;
+    for (j = 0; j < r; j++)
+      val += scl(i, j);
+    for (j = 0; j <= r; j++)
+    {
+      val += scl(i, ri++) - fv;           tcl(i, ti++) = val * iarr;
+    }
+    for (j = r + 1; j < h - r; j++)
+    {
+      val += scl(i, ri++) - scl(i, li++); tcl(i, ti++) = val * iarr;
+    }
+    for (j = h - r; j < h; j++)
+    {
+      val += lv           - scl(i, li++); tcl(i, ti++) = val * iarr;
+    }
+  }
 }
 
 void boxBlur_4(ArrayXXf& scl, ArrayXXf& tcl, int w, int h, int r)
 {
+  tcl = scl;
+  boxBlurH_4(tcl, scl, w, h, r);
+  boxBlurT_4(scl, tcl, w, h, r);
 }
 
 // approximate gaussian blur by applying box blur 3 times
