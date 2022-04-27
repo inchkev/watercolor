@@ -20,29 +20,29 @@ const float GAUSSIAN_KERNEL[9][9] =
 Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
   _x_res(x_res),
   _y_res(y_res),
-  _M(x_res, y_res),
   _u(x_res, y_res, 0),
-  _v(x_res, y_res, 1),
-  _pressure(x_res, y_res),
-  _g(x_res, y_res),
-  _h(x_res, y_res),
-  _delta_h(x_res, y_res),
-  _d(x_res, y_res),
-  _s(x_res, y_res),
-  _c(x_res, y_res)
+  _v(x_res, y_res, 1)
 {
-  _dt = 0.01;
+  _dt = 0.001;
   _dx = 0.5;
+
+  _M = Eigen::ArrayXXf::Zero(x_res, y_res);
+  _pressure = Eigen::ArrayXXf::Zero(x_res, y_res);
+  _g = Eigen::ArrayXXf::Zero(x_res, y_res);
+  _h = Eigen::ArrayXXf::Zero(x_res, y_res);
 
   _viscosity = 0.1;
   _viscous_drag = 0.01;
 
   // one color model
   // TODO: struct for pigments
-
+  _d = Eigen::ArrayXXf::Zero(x_res, y_res);
   _p_density = 0.02;
   _p_staining_power = 1.0;
   _p_granularity = 0.3;
+
+  _s = Eigen::ArrayXXf::Zero(x_res, y_res);
+  _c = Eigen::ArrayXXf::Zero(x_res, y_res);
 }
 
 void Watercolor2D::step()
@@ -66,6 +66,19 @@ void Watercolor2D::moveWater()
 void Watercolor2D::updateVelocities()
 {
   float a, b;
+  // _u -= _delta_h_x;
+  // _v -= _delta_h_y;
+  // for (int j = 0; j < _y_res; j++)
+  //   for (int i = 0; i < _x_res; i++)
+  //   {
+  //     const float valx = ((float**)dhx_)[i][j] * 0.5f;
+  //     const float valy = ((float**)dhy_)[i][j] * 0.5f;
+  //     _u(i-0.5f,j) -= valx;
+  //     _u(i+0.5f,j) -= valx;
+  //     _v(i,j-0.5f) -= valy;
+  //     _v(i,j+0.5f) -= valy;
+  //   }
+
   _dt = 1.0f / std::max(std::abs(_u.max()), std::abs(_v.max()));
   StaggeredGrid u_new(_x_res, _y_res, 0);
   StaggeredGrid v_new(_x_res, _y_res, 1);
@@ -131,8 +144,8 @@ void Watercolor2D::relaxDivergence()
 
   while (delta_max > tau || t >= N)
   {
-    StaggeredGrid u_new = _u;
-    StaggeredGrid v_new = _v;
+    StaggeredGrid u_new(_u);
+    StaggeredGrid v_new(_v);
     delta_max = 0.0f;
     for (int j = 0; j < _y_res; j++)
       for (int i = 0; i < _x_res; i++)
@@ -187,14 +200,14 @@ void Watercolor2D::movePigment()
     for (int i = 0; i < _x_res; i++)
     {
       const float gij = _g(i,j);
-      g_new(i+1,j) += std::max(0.0f, _u(i+0.5f,j)*gij);
-      g_new(i-1,j) += std::max(0.0f, -_u(i-0.5f,j)*gij);
-      g_new(i,j+1) += std::max(0.0f, _v(i,j+0.5f)*gij);
-      g_new(i,j-1) += std::max(0.0f, -_v(i,j-0.5f)*gij);
-      g_new(i,j) += -std::max(0.0f, _u(i+0.5f,j)*gij) +
-        std::max(0.0f, -_u(i-0.5f,j)*gij) +
-        std::max(0.0f, _v(i,j+0.5f)*gij) +
-        std::max(0.0f, -_v(i,j-0.5f)*gij);
+      g_new(i+1,j) += std::max(0.0f, _u(i+0.5f,j) * gij);
+      g_new(i-1,j) += std::max(0.0f, -_u(i-0.5f,j) * gij);
+      g_new(i,j+1) += std::max(0.0f, _v(i,j+0.5f) * gij);
+      g_new(i,j-1) += std::max(0.0f, -_v(i,j-0.5f) * gij);
+      g_new(i,j) += -std::max(0.0f, _u(i+0.5f,j) * gij) +
+        std::max(0.0f, -_u(i-0.5f,j) * gij) +
+        std::max(0.0f, _v(i,j+0.5f) * gij) +
+        std::max(0.0f, -_v(i,j-0.5f) * gij);
     }
   _g = g_new;
 }
@@ -209,12 +222,16 @@ void Watercolor2D::transferPigment()
   for (int j = 0; j < _y_res; j++)
     for (int i = 0; i < _x_res; i++)
     {
+      if (_M(i,j) != 1.0f)
+        continue;
+
       delta_down = _g(i,j) * (1.0f - _h(i,j) * _p_granularity) * _p_density;
       delta_up = _d(i,j) * (1.0f + (_h(i,j) - 1.0f) * _p_granularity) * _p_density / _p_staining_power;
       if ((_d(i,j) + delta_down) > 1.0f)
         delta_down = std::max(0.0f, 1.0f - _d(i,j));
       if ((_g(i,j) + delta_up) > 1.0f)
         delta_up = std::max(0.0f, 1.0f - _g(i,j));
+      /* std::cout << delta_down << "," << delta_up << std::endl; */
       _d(i,j) += delta_down - delta_up;
       _g(i,j) += delta_up - delta_down;
     }

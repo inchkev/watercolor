@@ -19,6 +19,10 @@ public:
   const int y_res() const { return _y_res; };
   Eigen::ArrayXXf& g()            { return _g; };
   const Eigen::ArrayXXf g() const { return _g; };
+  Eigen::ArrayXXf& d()            { return _d; };
+  const Eigen::ArrayXXf d() const { return _d; };
+  Eigen::ArrayXXf& M()            { return _M; };
+  const Eigen::ArrayXXf M() const { return _M; };
 protected:
   void moveWater();
     void updateVelocities();
@@ -41,7 +45,8 @@ protected:
   // TODO: turn _g and _d into separate data structures for multiple pigments
   Eigen::ArrayXXf _g;         // pigment concentration (just 1)
   Eigen::ArrayXXf _h;         // paper height
-  Eigen::ArrayXXf _delta_h;   // gradient of paper height
+  Eigen::ArrayXXf _delta_h_x; // gradient of paper height
+  Eigen::ArrayXXf _delta_h_y; // gradient of paper height
   float _viscosity;           // viscosity mu
   float _viscous_drag;        // viscous drag kappa
 
@@ -54,6 +59,9 @@ protected:
   // capillary layer
   Eigen::ArrayXXf _s;         // water saturation s of the paper
   Eigen::ArrayXXf _c;         // fluid-holding capacity c of the paper
+
+  void *dhx_;
+  void *dhy_;
 };
 
 #endif

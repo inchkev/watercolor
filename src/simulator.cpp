@@ -50,7 +50,7 @@ int y_field = -1;
 bool animate = true;
 
 // draw the grid over the field?
-bool draw_grid = true;
+bool draw_grid = false;
 
 // print out what the mouse is pointing at?
 bool draw_values = true;
@@ -467,7 +467,7 @@ int main(int argc, char **argv)
 void runEverytime()
 {
   simulator.step();
-  field = simulator.g();
+  field = simulator.d();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -476,7 +476,13 @@ void runEverytime()
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
-  for (int y = 0; y < y_res; y++)
-    for (int x = 0; x < x_res; x++)
-      continue;
+  // larger wet area mask
+  for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+    for (int x = 0.30 * x_res; x < 0.70 * x_res; x++)
+      simulator.M()(x, y) = 1.0;
+
+  // pigment in center square
+  for (int y = 0.45 * y_res; y < 0.55 * y_res; y++)
+    for (int x = 0.45 * x_res; x < 0.55 * x_res; x++)
+      simulator.g()(x, y) = 0.5;
 }

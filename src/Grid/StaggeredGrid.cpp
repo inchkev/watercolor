@@ -5,9 +5,70 @@
 StaggeredGrid::StaggeredGrid(const int x_res, const int y_res, bool axis) :
   _x_res(x_res),
   _y_res(y_res),
-  _axis(axis),
-  _data(x_res + 1, y_res * 2 + 1)
+  _axis(axis)
 {
+  _data = Eigen::ArrayXXf::Zero(x_res + 1, y_res * 2 + 1);
+}
+
+StaggeredGrid::StaggeredGrid(const StaggeredGrid& g) :
+  _x_res(g._x_res),
+  _y_res(g._y_res),
+  _axis(g._axis)
+{
+  _data = g._data;
+}
+
+StaggeredGrid& StaggeredGrid::operator=(const StaggeredGrid& g)
+{
+  assert(g.x_res() == _x_res);
+  assert(g.y_res() == _y_res);
+  assert(g.axis() == _axis);
+  _data = g._data;
+  return *this;
+}
+
+StaggeredGrid& StaggeredGrid::operator+=(const Eigen::ArrayXXf a)
+{
+  assert(a.rows() == _x_res);
+  assert(a.cols() == _y_res);
+  for (int j = 0; j < _y_res * 2 + 1; j++)
+    for (int i = 0; i < _x_res + (j % 2); i++)
+    {
+      const float val = a(i,j) * 0.5f;
+      if (_axis)
+      {
+        (*this)(i-0.5f,j) -= val;
+        (*this)(i+0.5f,j) -= val;
+      }
+      else
+      {
+        (*this)(i,j-0.5f) -= val;
+        (*this)(i,j+0.5f) -= val;
+      }
+    }
+  return *this;
+}
+
+StaggeredGrid& StaggeredGrid::operator-=(const Eigen::ArrayXXf a)
+{
+  assert(a.rows() == _x_res);
+  assert(a.cols() == _y_res);
+  for (int j = 0; j < _y_res * 2 + 1; j++)
+    for (int i = 0; i < _x_res + (j % 2); i++)
+    {
+      const float val = a(i,j) * 0.5f;
+      if (_axis)
+      {
+        (*this)(i-0.5f,j) -= val;
+        (*this)(i+0.5f,j) -= val;
+      }
+      else
+      {
+        (*this)(i,j-0.5f) -= val;
+        (*this)(i,j+0.5f) -= val;
+      }
+    }
+  return *this;
 }
 
 float StaggeredGrid::max() const

@@ -7,6 +7,10 @@ class StaggeredGrid
 {
 public:
   StaggeredGrid(const int x_res, const int y_res, bool axis);
+  StaggeredGrid(const StaggeredGrid& g);
+  StaggeredGrid& operator=(const StaggeredGrid& g);
+  StaggeredGrid& operator+=(const Eigen::ArrayXXf a);
+  StaggeredGrid& operator-=(const Eigen::ArrayXXf a);
   ~StaggeredGrid() {};
 
   float& operator()(float x, float y);
