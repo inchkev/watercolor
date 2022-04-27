@@ -4,7 +4,7 @@
 
 using std::vector;
 
-vector<int> &boxesForGauss(int sigma, int n)
+vector<int> boxesForGauss(int sigma, int n)
 {
   const float w_ideal = std::sqrt(12.0*sigma*sigma/(float)n + 1.0);
   int wl = std::floor(w_ideal);
@@ -31,7 +31,7 @@ void boxBlurH_4(ArrayXXf& scl, ArrayXXf& tcl, int w, int h, int r)
     int li = 0; // pointer to left index
     int ri = r; // pointer to right index
     float val = (r + 1) * fv;
-    int j;
+    int i;
     for (i = 0; i < r; i++)
       val += scl(i, j);
     for (i = 0; i <= r; i++)
@@ -54,10 +54,13 @@ void boxBlurT_4(ArrayXXf& scl, ArrayXXf& tcl, int w, int h, int r)
   const float iarr = 1.0f / (r+r+1);
   for (int i = 0; i < w; i++)
   {
+    const float fv = scl(i, 0);
+    const float lv = scl(i, h-1);
     int ti = 0; // pointer to target index
     int li = 0; // pointer to left index
     int ri = r; // pointer to right index
-    int i;
+    float val = (r + 1) * fv;
+    int j;
     for (j = 0; j < r; j++)
       val += scl(i, j);
     for (j = 0; j <= r; j++)
@@ -85,7 +88,7 @@ void boxBlur_4(ArrayXXf& scl, ArrayXXf& tcl, int w, int h, int r)
 // approximate gaussian blur by applying box blur 3 times
 void gaussBlur_4(ArrayXXf& scl, ArrayXXf& tcl, int w, int h, int r)
 {
-  vector<int>& boxes = boxesForGauss(r, 3);
+  vector<int> boxes = boxesForGauss(r, 3);
   boxBlur_4(scl, tcl, w, h, (boxes[0] - 1) / 2);
   boxBlur_4(tcl, scl, w, h, (boxes[1] - 1) / 2);
   boxBlur_4(scl, tcl, w, h, (boxes[2] - 1) / 2);

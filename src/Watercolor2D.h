@@ -34,7 +34,7 @@ protected:
   float _dt;
 
   // shallow-water layer
-  Eigen::ArrayXXb _M;         // wet-area mask M
+  Eigen::ArrayXXf _M;         // wet-area mask M
   StaggeredGrid _u;           // velocity in the x direction
   StaggeredGrid _v;           // velocity in the y direction
   Eigen::ArrayXXf _pressure;  // pressure
@@ -42,14 +42,14 @@ protected:
   Eigen::ArrayXXf _g;         // pigment concentration (just 1)
   Eigen::ArrayXXf _h;         // paper height
   Eigen::ArrayXXf _delta_h;   // gradient of paper height
-  float _viscosity;
-  float _viscous_drag;
+  float _viscosity;           // viscosity mu
+  float _viscous_drag;        // viscous drag kappa
 
   // pigment-deposition layer
   Eigen::ArrayXXf _d;         // deposited pigment concentration (again, just 1)
-  float _p_density;           // pigment density
-  float _p_staining_power;    // pigment staining power
-  float _p_granularity;       // pigment granularity
+  float _p_density;           // pigment density rho
+  float _p_staining_power;    // pigment staining power omega
+  float _p_granularity;       // pigment granularity gamma
 
   // capillary layer
   Eigen::ArrayXXf _s;         // water saturation s of the paper

@@ -1,9 +1,10 @@
 #include "Watercolor2D.h"
+#include "util/GaussianBlur.h"
 #include <iostream>
 
 // http://demofox.org/gauss.html
 // generated with sigma = 1.0, support = 0.995
-const float[9][9] GAUSSIAN_KERNEL =
+const float GAUSSIAN_KERNEL[9][9] =
 {
   {0.0000f, 0.0000f, 0.0000f, 0.0001f, 0.0001f, 0.0001f, 0.0000f, 0.0000f, 0.0000f},
   {0.0000f, 0.0000f, 0.0004f, 0.0014f, 0.0023f, 0.0014f, 0.0004f, 0.0000f, 0.0000f},
@@ -32,6 +33,16 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
 {
   _dt = 0.01;
   _dx = 0.5;
+
+  _viscosity = 0.1;
+  _viscous_drag = 0.01;
+
+  // one color model
+  // TODO: struct for pigments
+
+  _p_density = 0.02;
+  _p_staining_power = 1.0;
+  _p_granularity = 0.3;
 }
 
 void Watercolor2D::step()
@@ -56,7 +67,8 @@ void Watercolor2D::updateVelocities()
 {
   float a, b;
   _dt = 1.0f / std::max(std::abs(_u.max()), std::abs(_v.max()));
-  StaggeredGrid u_new(_x_res, _y_res), v_new(_x_res, _y_res);
+  StaggeredGrid u_new(_x_res, _y_res, 0);
+  StaggeredGrid v_new(_x_res, _y_res, 1);
   for (int j = 0; j < _y_res; j++)
     for (int i = 0; i < _x_res; i++)
     {
@@ -88,7 +100,7 @@ void Watercolor2D::enforceBoundaryConditions()
     for (int i = 0; i < _x_res; i++)
     {
       // if not wet, set velocities of cell to zero
-      if (_M(i, j))
+      if (_M(i, j) == 1.0f)
         continue;
 
       _u(i+0.5f,j) = 0.0f;
@@ -125,8 +137,8 @@ void Watercolor2D::relaxDivergence()
     for (int j = 0; j < _y_res; j++)
       for (int i = 0; i < _x_res; i++)
       {
-        float delta = xi * (_u(i+0.5f,j) - _u(i-0.5f,j) + v(i,j+0.5f) - v(i,j-0.5f));
-        _p(i,j) += delta;
+        float delta = xi * (_u(i+0.5f,j) - _u(i-0.5f,j) + _v(i,j+0.5f) - _v(i,j-0.5f));
+        _pressure(i,j) += delta;
         u_new(i+0.5f,j) += delta;
         u_new(i-0.5f,j) -= delta;
         v_new(i,j+0.5f) += delta;
@@ -145,12 +157,20 @@ void Watercolor2D::relaxDivergence()
  * wet-area mask, with more water removed from cells closer
  * to the boundary.
  *
- * p <- p - μ (1 - M') M
- * "In our examples, K = 10 and 0.01 <= μ <= 0.05."
+ * p <- p - η (1 - M') M
+ * "In our examples, K = 10 and 0.01 <= η <= 0.05."
  */
 void Watercolor2D::flowOutward()
 {
+  const float eta = 0.01f;
+  const int gaussian_radius = 5; // K = 9 ish
 
+  Eigen::ArrayXXf M_copy = _M;
+  Eigen::ArrayXXf M_blur(_x_res, _y_res);
+  approximateGaussianBlur(M_copy, M_blur, _x_res, _y_res, gaussian_radius);
+  for (int j = 0; j < _y_res; j++)
+    for (int i = 0; i < _x_res; i++)
+      _pressure -= eta * (1.0f - M_blur(i, j)) * _M(i,j);
 }
 
 /**
@@ -166,12 +186,12 @@ void Watercolor2D::movePigment()
   for (int j = 0; j < _y_res; j++)
     for (int i = 0; i < _x_res; i++)
     {
-      const float gij = g(i,j);
+      const float gij = _g(i,j);
       g_new(i+1,j) += std::max(0.0f, _u(i+0.5f,j)*gij);
       g_new(i-1,j) += std::max(0.0f, -_u(i-0.5f,j)*gij);
       g_new(i,j+1) += std::max(0.0f, _v(i,j+0.5f)*gij);
       g_new(i,j-1) += std::max(0.0f, -_v(i,j-0.5f)*gij);
-      g_new(i,j) -= std::max(0.0f, _u(i+0.5f,j)*gij) +
+      g_new(i,j) += -std::max(0.0f, _u(i+0.5f,j)*gij) +
         std::max(0.0f, -_u(i-0.5f,j)*gij) +
         std::max(0.0f, _v(i,j+0.5f)*gij) +
         std::max(0.0f, -_v(i,j-0.5f)*gij);
