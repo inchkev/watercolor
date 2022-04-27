@@ -31,8 +31,8 @@ StaggeredGrid& StaggeredGrid::operator+=(const Eigen::ArrayXXf a)
 {
   assert(a.rows() == _x_res);
   assert(a.cols() == _y_res);
-  for (int j = 0; j < _y_res * 2 + 1; j++)
-    for (int i = 0; i < _x_res + (j % 2); i++)
+  for (int j = 0; j < _y_res; j++)
+    for (int i = 0; i < _x_res; i++)
     {
       const float val = a(i,j) * 0.5f;
       if (_axis)
@@ -53,8 +53,8 @@ StaggeredGrid& StaggeredGrid::operator-=(const Eigen::ArrayXXf a)
 {
   assert(a.rows() == _x_res);
   assert(a.cols() == _y_res);
-  for (int j = 0; j < _y_res * 2 + 1; j++)
-    for (int i = 0; i < _x_res + (j % 2); i++)
+  for (int j = 0; j < _y_res; j++)
+    for (int i = 0; i < _x_res; i++)
     {
       const float val = a(i,j) * 0.5f;
       if (_axis)

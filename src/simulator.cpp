@@ -477,12 +477,12 @@ void runEverytime()
 void runOnce()
 {
   // larger wet area mask
-  for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+  for (int y = 0.35 * y_res; y < 0.75 * y_res; y++)
     for (int x = 0.30 * x_res; x < 0.70 * x_res; x++)
       simulator.M()(x, y) = 1.0;
 
   // pigment in center square
   for (int y = 0.45 * y_res; y < 0.55 * y_res; y++)
     for (int x = 0.45 * x_res; x < 0.55 * x_res; x++)
-      simulator.g()(x, y) = 0.5;
+      simulator.g()(x, y) = 0.01;
 }
