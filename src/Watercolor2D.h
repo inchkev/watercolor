@@ -24,11 +24,10 @@ public:
   Eigen::ArrayXXf& M()            { return _M; };
   const Eigen::ArrayXXf M() const { return _M; };
 protected:
-  void moveWater();
-    void updateVelocities();
-      void enforceBoundaryConditions();
-    void relaxDivergence();
-    void flowOutward();
+  void updateVelocities();
+    void enforceBoundaryConditions();
+  void relaxDivergence();
+  void flowOutward();
   void movePigment();
   void transferPigment();
   void simulateCapillaryFlow();

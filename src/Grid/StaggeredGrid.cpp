@@ -1,5 +1,7 @@
 #include <cmath>
 #include <limits>
+#include <iostream>
+#include <stdexcept>
 #include "StaggeredGrid.h"
 
 StaggeredGrid::StaggeredGrid(const int x_res, const int y_res, bool axis) :
@@ -71,24 +73,6 @@ StaggeredGrid& StaggeredGrid::operator-=(const Eigen::ArrayXXf a)
   return *this;
 }
 
-float StaggeredGrid::max() const
-{
-  float max_value = std::numeric_limits<float>::min();
-  for (int j = 0; j < _y_res * 2 + 1; j++)
-    for (int i = 0; i < _x_res + (j % 2); i++)
-      max_value = std::max(max_value, _data(i, j));
-  return max_value;
-}
-
-float StaggeredGrid::min() const
-{
-  float min_value = std::numeric_limits<float>::max();
-  for (int j = 0; j < _y_res * 2 + 1; j++)
-    for (int i = 0; i < _x_res + (j % 2); i++)
-      min_value = std::min(min_value, _data(i, j));
-  return min_value;
-}
-
 float& StaggeredGrid::operator()(float x, float y)
 {
   assert (x >= -0.5f && x <= (float)_x_res + 0.5f);
@@ -109,19 +93,19 @@ float& StaggeredGrid::operator()(float x, float y)
         if (yi == 0)
           return _data(xi, 1);
         if (yi == _y_res * 2)
-          return _data(xi, _y_res * 2 - 1);
-        assert(false);
+          return _data(xi, _y_res*2-1);
+        throw std::invalid_argument("invalid argument");
       }
       if (xi == 0)
         return _data(0, yi);
       if (xi == _x_res)
         return _data(_x_res-1, yi);
-      assert(false);
+      throw std::invalid_argument("invalid argument");
     }
     return _data(xi, yi);
   }
   if (!y_border)
-    assert(false);
+    throw std::invalid_argument("invalid argument");
   return _data(xi, yi);
 }
 
@@ -173,4 +157,81 @@ const float StaggeredGrid::operator()(float x, float y) const
         return (_data(xi, yi) + _data(xi+1, yi)) * 0.5f;
     }
   }
+}
+
+const float StaggeredGrid::get(float x, float y)
+{
+  assert (x >= -0.5f && x <= cols + 0.5f);
+  assert (y >= -0.5f && y <= rows + 0.5f);
+
+  int xi = (int) (x + 0.5f);
+  int yi = (int) (y * 2.0f) + 1;
+  bool x_border = (x - std::trunc(x) == .5 || x - std::trunc(x) == -.5);
+  bool y_border = (y - std::trunc(y) == .5 || y - std::trunc(y) == -.5);
+
+  if (x_border)
+  {
+    if (y_border)
+    {
+      if (_axis)
+      {
+        if (yi == 0)
+          return _data(xi, 1);
+        else if (yi == _y_res * 2)
+          return _data(xi, _y_res * 2 - 1);
+        else
+          return (_data(xi, yi-1) + _data(xi, yi+1)) * 0.5f;
+      }
+      else
+      {
+        if (xi == 0)
+          return _data(0, yi);
+        else if (xi == _x_res)
+          return _data(_x_res-1, yi);
+        else
+          return (_data(xi-1, yi) + _data(xi, yi)) * 0.5f;
+      }
+    }
+    else
+      return _data(xi, yi);
+  }
+  else
+  {
+    if (y_border)
+      return _data(xi, yi);
+    else
+    {
+      if (_axis)
+        return (_data(xi, yi-1) + _data(xi, yi+1)) * 0.5f;
+      else
+        return (_data(xi, yi) + _data(xi+1, yi)) * 0.5f;
+    }
+  }
+}
+
+float StaggeredGrid::absmax() const
+{
+  float max_value = 0.0f;
+  for (int j = 0; j < _y_res * 2 + 1; j++)
+    for (int i = 0; i < _x_res + (j % 2); i++)
+      max_value = std::max(max_value, std::abs(_data(i, j)));
+  return max_value;
+}
+
+float StaggeredGrid::max() const
+{
+  float max_value = std::numeric_limits<float>::min();
+  for (int j = 0; j < _y_res * 2 + 1; j++)
+    for (int i = 0; i < _x_res + (j % 2); i++)
+      max_value = std::max(max_value, _data(i, j));
+  return max_value;
+}
+
+float StaggeredGrid::min() const
+{
+  float min_value = std::numeric_limits<float>::max();
+  for (int j = 0; j < _y_res * 2 + 1; j++)
+    for (int i = 0; i < _x_res + (j % 2); i++)
+      min_value = std::min(min_value, _data(i, j));
+  return min_value;
 }

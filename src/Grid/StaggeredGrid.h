@@ -22,11 +22,18 @@ public:
   float& operator()(float x, int y)               { return (*this)(x, (float)y); };
   const float operator()(float x, int y) const    { return (*this)(x, (float)y); };
 
+  // read only access, interpolates at non-boundary locations
+  const float get(float x, float y);
+  const float get(int x, float y)    { return get((float)x, y); };
+  const float get(float x, int y)    { return get(x, (float)y); };
+  const float get(int x, int y)      { return get((float)x, (float)y); };
+
   Eigen::ArrayXXf& data() { return _data; };
   int x_res() const { return _x_res; };
   int y_res() const { return _y_res; };
   int axis() const { return _axis; };
 
+  float absmax() const;
   float max() const;
   float min() const;
 private:

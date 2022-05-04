@@ -2,21 +2,6 @@
 #include "util/GaussianBlur.h"
 #include <iostream>
 
-// http://demofox.org/gauss.html
-// generated with sigma = 1.0, support = 0.995
-const float GAUSSIAN_KERNEL[9][9] =
-{
-  {0.0000f, 0.0000f, 0.0000f, 0.0001f, 0.0001f, 0.0001f, 0.0000f, 0.0000f, 0.0000f},
-  {0.0000f, 0.0000f, 0.0004f, 0.0014f, 0.0023f, 0.0014f, 0.0004f, 0.0000f, 0.0000f},
-  {0.0000f, 0.0004f, 0.0037f, 0.0146f, 0.0232f, 0.0146f, 0.0037f, 0.0004f, 0.0000f},
-  {0.0001f, 0.0014f, 0.0146f, 0.0584f, 0.0926f, 0.0584f, 0.0146f, 0.0014f, 0.0001f},
-  {0.0001f, 0.0023f, 0.0232f, 0.0926f, 0.1466f, 0.0926f, 0.0232f, 0.0023f, 0.0001f},
-  {0.0001f, 0.0014f, 0.0146f, 0.0584f, 0.0926f, 0.0584f, 0.0146f, 0.0014f, 0.0001f},
-  {0.0000f, 0.0004f, 0.0037f, 0.0146f, 0.0232f, 0.0146f, 0.0037f, 0.0004f, 0.0000f},
-  {0.0000f, 0.0000f, 0.0004f, 0.0014f, 0.0023f, 0.0014f, 0.0004f, 0.0000f, 0.0000f},
-  {0.0000f, 0.0000f, 0.0000f, 0.0001f, 0.0001f, 0.0001f, 0.0000f, 0.0000f, 0.0000f},
-};
-
 Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
   _x_res(x_res),
   _y_res(y_res),
@@ -39,8 +24,8 @@ float dhy[200][200] = {{0.00,-0.01,-0.01,0.00,0.02,0.02,0.00,-0.01,-0.02,-0.02,0
   for (int y = 0; y < _y_res; y++)
     for (int x = 0; x < _x_res; x++)
     {
-      _delta_h_x(x,y) = dhx[x][y]*1;
-      _delta_h_y(x,y) = dhy[x][y]*1;
+      _delta_h_x(x,y) = dhx[x][y];
+      _delta_h_y(x,y) = dhy[x][y];
     }
 
   _viscosity = 0.1;
@@ -49,9 +34,9 @@ float dhy[200][200] = {{0.00,-0.01,-0.01,0.00,0.02,0.02,0.00,-0.01,-0.02,-0.02,0
   // one color model
   // TODO: struct for pigments
   _d = Eigen::ArrayXXf::Zero(x_res, y_res);
-  _p_density = 0.02;
+  _p_density = 0.1;
   _p_staining_power = 0.5;
-  _p_granularity = 0.12;
+  _p_granularity = 0.012;
 
   _s = Eigen::ArrayXXf::Zero(x_res, y_res);
   _c = Eigen::ArrayXXf::Zero(x_res, y_res);
@@ -59,17 +44,41 @@ float dhy[200][200] = {{0.00,-0.01,-0.01,0.00,0.02,0.02,0.00,-0.01,-0.02,-0.02,0
 
 void Watercolor2D::step()
 {
-  moveWater();
-  movePigment();
-  transferPigment();
-  simulateCapillaryFlow();
-}
+  std::cout << "testing!" << std::endl;
+  StaggeredGrid a(2, 2, 0);
+  a(0.5f,0) = 3.0f;
+  a(1.5f,0) = 2.0f;
+  a(1,0.5f) = 100.f;
 
-void Watercolor2D::moveWater()
-{
+  std::cout << " " << a(0,1.5f) << "|" << a(1,1.5f) << std::endl;
+  std::cout << a(-.5f,1) << "•" << a(0.5f,1) << "•" << a(1.5f,1) << std::endl;
+  std::cout << " " << a(0,.5f) << "|" << a(1,.5f) << std::endl;
+  std::cout << a(-.5f,0) << "•" << a(0.5f,0) << "•" << a(1.5f,0) << std::endl;
+  std::cout << " " << a(0,-.5f) << "|" << a(1,-.5f) << std::endl;
+
+  std::cout << std::endl;
+  std::cout << a.get(0,1) << " " << a.get(1,1) << std::endl;
+  std::cout << a.get(0,0) << " " << a.get(1,0) << std::endl;
+  exit(0);
+
+
+  std::cout << "-----" << std::endl;
+  std::cout << "   " << _u.max() << " " << _v.max() << std::endl;
+  std::cout << "-----updateVelocities" << std::endl;
   updateVelocities();
+  std::cout << "   " << _u.max() << " " << _v.max() << std::endl;
+  std::cout << "-----relaxDivergence" << std::endl;
   relaxDivergence();
+  std::cout << "   " << _u.max() << " " << _v.max() << std::endl;
+  std::cout << "-----movePigment" << std::endl;
+
+  movePigment();
+  std::cout << "   " << _u.max() << " " << _v.max() << std::endl;
+  std::cout << "-----transferPigment" << std::endl;
+  transferPigment();
+  std::cout << "   " << _u.max() << " " << _v.max() << std::endl;
   flowOutward();
+  simulateCapillaryFlow();
 }
 
 /**
@@ -81,28 +90,37 @@ void Watercolor2D::updateVelocities()
   _u -= _delta_h_x;
   _v -= _delta_h_y;
 
-  _dt = 1.0f / std::max(std::abs(_u.max()), std::abs(_v.max()));
-  StaggeredGrid u_new(_x_res, _y_res, 0);
-  StaggeredGrid v_new(_x_res, _y_res, 1);
-  for (int j = 0; j < _y_res; j++)
-    for (int i = 0; i < _x_res; i++)
-    {
-      a = _u(i,j)*_u(i,j) - _u(i+1,j)*_u(i+1,j) +
-        _u(i+0.5f,j-0.5f)*_v(i+0.5f,j-0.5f) -
-        _u(i+0.5f,j+0.5f)*_v(i+0.5f,j+0.5f);
-      b = _u(i+1.5f,j) + _u(i-0.5f,j) + _u(i+0.5f,j) + _u(i+0.5f,j-1) - 4*_u(i+0.5f,j);
-      u_new(i+0.5f,j) = _u(i+0.5f,j) + _dt * (
-          a - _viscosity*b + _pressure(i,j) - _pressure(i+1,j) - _viscous_drag*_u(i+0.5f,j));
-      a = _v(i,j)*_v(i,j) - _u(i+1,j)*_u(i+1,j) +
-        _u(i-0.5f,j+0.5f)*_v(i-0.5f,j+0.5f) -
-        _u(i+0.5f,j+0.5f)*_v(i+0.5f,j+0.5f);
-      b = _v(i+1,j+0.5f) + _v(i-1,j+0.5f) + _v(i,j+1.5f) + _v(i,j-0.5f) - 4*_v(i,j+0.5f);
-      v_new(i,j+0.5f) = _u(i,j+0.5f) + _dt * (
-          a - _viscosity*b + _pressure(i,j) - _pressure(i,j+1) - _viscous_drag*_u(i,j+0.5f));
-    }
-  _u = u_new;
-  _v = v_new;
-  enforceBoundaryConditions();
+  _dt = std::max(1.0f / std::max(_u.absmax(), _v.absmax()), 0.01f);
+  /* _dt = 1.0f / std::max(_u.absmax(), _v.absmax()); */
+  for (float t = 0.0f; t < 1.0f; t += _dt)
+  {
+    StaggeredGrid u_new(_x_res, _y_res, 0);
+    StaggeredGrid v_new(_x_res, _y_res, 1);
+    /* StaggeredGrid u_new(_u); */
+    /* StaggeredGrid v_new(_v); */
+    for (int j = 0; j < _y_res; j++)
+      for (int i = 0; i < _x_res; i++)
+      {
+        a = _u(i,j)*_u(i,j) - _u(i+1,j)*_u(i+1,j) +
+          _u(i+0.5f,j-0.5f)*_v(i+0.5f,j-0.5f) -
+          _u(i+0.5f,j+0.5f)*_v(i+0.5f,j+0.5f);
+        b = _u(i+1.5f,j) + _u(i-0.5f,j) + _u(i+0.5f,j+1) + _u(i+0.5f,j-1) - 4.0f*_u(i+0.5f,j);
+        u_new(i+0.5f,j) = _u(i+0.5f,j) + _dt * (
+        /* u_new(i+0.5f,j) += _dt * ( */
+            a - _viscosity*b + _pressure(i,j) - _pressure(i+1,j) - _viscous_drag*_u(i+0.5f,j));
+        a = _v(i,j)*_v(i,j) - _v(i,j+1)*_v(i,j+1) +
+          _u(i-0.5f,j+0.5f)*_v(i-0.5f,j+0.5f) -
+          _u(i+0.5f,j+0.5f)*_v(i+0.5f,j+0.5f);
+        b = _v(i+1,j+0.5f) + _v(i-1,j+0.5f) + _v(i,j+1.5f) + _v(i,j-0.5f) - 4.0f*_v(i,j+0.5f);
+        v_new(i,j+0.5f) = _v(i,j+0.5f) + _dt * (
+        /* v_new(i,j+0.5f) += + _dt * ( */
+            a - _viscosity*b + _pressure(i,j) - _pressure(i,j+1) - _viscous_drag*_v(i,j+0.5f));
+      }
+    std::cout << "updatevel " << u_new.absmax() << " " << v_new.absmax() << std::endl;
+    _u = u_new;
+    _v = v_new;
+    /* enforceBoundaryConditions(); */
+  }
 }
 
 /**
@@ -143,34 +161,49 @@ void Watercolor2D::relaxDivergence()
 
   int t = 0;
   float delta_max = 0.0f;
+  float sum = 0.0f;
 
-  while (delta_max > tau || t >= N)
+  StaggeredGrid u_new(_u);
+  StaggeredGrid v_new(_v);
+  while (1)
   {
-    StaggeredGrid u_new(_u);
-    StaggeredGrid v_new(_v);
     delta_max = 0.0f;
+    u_new = _u;
+    v_new = _v;
     for (int j = 0; j < _y_res; j++)
       for (int i = 0; i < _x_res; i++)
       {
-        float delta = xi * (_u(i+0.5f,j) - _u(i-0.5f,j) + _v(i,j+0.5f) - _v(i,j-0.5f));
+        float delta = -xi * (_u(i+0.5f,j) - _u(i-0.5f,j) +
+                             _v(i,j+0.5f) - _v(i,j-0.5f));
         _pressure(i,j) += delta;
         u_new(i+0.5f,j) += delta;
         u_new(i-0.5f,j) -= delta;
         v_new(i,j+0.5f) += delta;
         v_new(i,j-0.5f) -= delta;
+        sum += delta;
         delta_max = std::max(std::abs(delta), delta_max);
       }
+    t++;
     _u = u_new;
     _v = v_new;
-    t++;
+    std::cout << ">> " << _u.max() << " " << _v.max() << std::endl;
+    std::cout << "  dmax " << delta_max << std::endl;
+
+    if (delta_max <= tau || t >= N)
+      break;
   }
+  std::cout << "sum  " << sum << std::endl;
+  std::cout << "dmax " << delta_max << std::endl;
+  std::cout << "uh " << _u.max() << " " << _v.max() << std::endl;
 }
 
 /**
  * Removes an amount of water from each cell according
  * to the cell's distance from the boundary of the
  * wet-area mask, with more water removed from cells closer
- * to the boundary.
+ * to the boundary. Darkens edges.
+ *
+ * For backrun effects only.
  *
  * p <- p - η (1 - M') M
  * "In our examples, K = 10 and 0.01 <= η <= 0.05."
@@ -178,14 +211,17 @@ void Watercolor2D::relaxDivergence()
 void Watercolor2D::flowOutward()
 {
   const float eta = 0.01f;
-  const int gaussian_radius = 5; // K = 9 ish
+  const int gaussian_radius = 4; // K = 9 ish
 
   Eigen::ArrayXXf M_copy = _M;
   Eigen::ArrayXXf M_blur(_x_res, _y_res);
   approximateGaussianBlur(M_copy, M_blur, _x_res, _y_res, gaussian_radius);
   for (int j = 0; j < _y_res; j++)
     for (int i = 0; i < _x_res; i++)
-      _pressure -= eta * (1.0f - M_blur(i, j)) * _M(i,j);
+    {
+      const float blur = eta * (1.0f - M_blur(i, j)) * _M(i,j);
+      _pressure(i,j) -= std::max(std::min(blur, _pressure(i,j)), 0.0f);
+    }
 }
 
 /**
@@ -195,23 +231,27 @@ void Watercolor2D::flowOutward()
  */
 void Watercolor2D::movePigment()
 {
-  _dt = 1.0f / std::max(std::abs(_u.max()), std::abs(_v.max()));
+  _dt = 1.0f / std::max(_u.absmax(), _v.absmax());
+  std::cout << "movePigment _dt = " << _dt << std::endl;
   // when more than one pigment, loop through each pigment
-  Eigen::ArrayXXf g_new = _g;
-  for (int j = 0; j < _y_res; j++)
-    for (int i = 0; i < _x_res; i++)
-    {
-      const float gij = _g(i,j);
-      g_new(i+1,j) += std::max(0.0f, _u(i+0.5f,j) * gij);
-      g_new(i-1,j) += std::max(0.0f, -_u(i-0.5f,j) * gij);
-      g_new(i,j+1) += std::max(0.0f, _v(i,j+0.5f) * gij);
-      g_new(i,j-1) += std::max(0.0f, -_v(i,j-0.5f) * gij);
-      g_new(i,j) += -std::max(0.0f, _u(i+0.5f,j) * gij) +
-        std::max(0.0f, -_u(i-0.5f,j) * gij) +
-        std::max(0.0f, _v(i,j+0.5f) * gij) +
-        std::max(0.0f, -_v(i,j-0.5f) * gij);
-    }
-  _g = g_new;
+  for (float t = 0.0f; t < 1.0f; t += _dt)
+  {
+    Eigen::ArrayXXf g_new = _g;
+    for (int j = 0; j < _y_res; j++)
+      for (int i = 0; i < _x_res; i++)
+      {
+        const float gij = _g(i,j);
+        g_new(i+1,j) += std::max(0.0f, _u(i+0.5f,j) * gij);
+        g_new(i-1,j) += std::max(0.0f, -_u(i-0.5f,j) * gij);
+        g_new(i,j+1) += std::max(0.0f, _v(i,j+0.5f) * gij);
+        g_new(i,j-1) += std::max(0.0f, -_v(i,j-0.5f) * gij);
+        g_new(i,j) += -std::max(0.0f, _u(i+0.5f,j) * gij) +
+          std::max(0.0f, -_u(i-0.5f,j) * gij) +
+          std::max(0.0f, _v(i,j+0.5f) * gij) +
+          std::max(0.0f, -_v(i,j-0.5f) * gij);
+      }
+    _g = g_new;
+  }
 }
 
 /**
@@ -257,17 +297,17 @@ void Watercolor2D::simulateCapillaryFlow()
   const float delta = 0.1;
   // sigma, saturation threshold which determines if wet-area mask _M is
   // expanded or not
-  const float sigma = 0.1;
+  const float sigma = 0.01;
 
-  for (int j = 0; j < _y_res; j++)
     for (int i = 0; i < _x_res; i++)
+  for (int j = 0; j < _y_res; j++)
       if (_M(i,j) > 0.0f)
         _s(i,j) += std::max(0.0f, std::min(alpha, _c(i,j) - _s(i,j)));
 
   Eigen::ArrayXXf s_new = _s;
   for (int j = 1; j < _y_res - 1; j++)
     for (int i = 1; i < _x_res - 1; i++)
-      // for each cell (k, l) that are neijghbors of (i, j)
+      // for each cell (k, l) that are neighbors of (i, j)
       for (int l = j - 1; l < j + 2; l += 2)
         for (int k = i - 1; k < i + 2; k += 2)
           if (_s(i,j) > epsilon && _s(i,j) > _s(k,l) && _s(k,l) > delta)

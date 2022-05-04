@@ -17,8 +17,8 @@
 using namespace std;
 
 // resolution of the field
-int x_res = 200;
-int y_res = 200;
+int x_res = 100;
+int y_res = 100;
 
 // the field being drawn and manipulated
 Eigen::ArrayXXf field(x_res, y_res);
@@ -341,7 +341,10 @@ void glutMouseClick(int button, int state, int x, int y)
     // zero out a 10x10 square of chemical b
     for (int sx = max(0, x_field - 5); sx < min(x_res, x_field + 5); sx++)
       for (int sy = max(0, y_field - 5); sy < min(y_res, y_field + 5); sy++)
-          simulator.g()(sx,sy) = 1.0f;
+      {
+        simulator.M()(sx,sy) = 1.0f;
+        simulator.g()(sx,sy) = 0.3f;
+      }
 
     // make sure nothing else is called
     return;
@@ -477,12 +480,12 @@ void runEverytime()
 void runOnce()
 {
   // larger wet area mask
-  for (int y = 0.35 * y_res; y < 0.75 * y_res; y++)
-    for (int x = 0.30 * x_res; x < 0.70 * x_res; x++)
+  for (int y = 0.20 * y_res; y < 0.8 * y_res; y++)
+    for (int x = 0.20 * x_res; x < 0.8 * x_res; x++)
       simulator.M()(x, y) = 1.0;
 
   // pigment in center square
-  for (int y = 0.45 * y_res; y < 0.55 * y_res; y++)
-    for (int x = 0.45 * x_res; x < 0.55 * x_res; x++)
+  for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+    for (int x = 0.40 * x_res; x < 0.60 * x_res; x++)
       simulator.g()(x, y) = 0.01;
 }
