@@ -8,6 +8,7 @@ EXECUTABLE = ../bin/simulator
 SOURCES    = simulator.cpp \
 						 Grid/StaggeredGrid.cpp \
 						 util/GaussianBlur.cpp \
+						 util/ReadPPM.cpp \
 						 Watercolor2D.cpp \
 						 FIELD_2D.cpp 
 

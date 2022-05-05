@@ -111,8 +111,8 @@ float& StaggeredGrid::operator()(float x, float y)
 
 const float StaggeredGrid::operator()(float x, float y) const
 {
-  assert (x >= -0.5f && x <= cols + 0.5f);
-  assert (y >= -0.5f && y <= rows + 0.5f);
+  assert (x >= -0.5f && x <= (float)_x_res + 0.5f);
+  assert (y >= -0.5f && y <= (float)_y_res + 0.5f);
 
   int xi = (int) (x + 0.5f);
   int yi = (int) (y * 2.0f) + 1;
@@ -161,8 +161,13 @@ const float StaggeredGrid::operator()(float x, float y) const
 
 const float StaggeredGrid::get(float x, float y)
 {
-  assert (x >= -0.5f && x <= cols + 0.5f);
-  assert (y >= -0.5f && y <= rows + 0.5f);
+  assert (x >= -0.5f && x <= (float)_x_res + 0.5f);
+  assert (y >= -0.5f && y <= (float)_y_res + 0.5f);
+  if (x < -0.5f || x > (float)_x_res + 0.5f || y < -0.5f || y > (float)_y_res + 0.5f)
+  {
+    std::cout << "INVALID " << x << ", " << y << std::endl;
+    throw;
+  }
 
   int xi = (int) (x + 0.5f);
   int yi = (int) (y * 2.0f) + 1;
@@ -177,36 +182,23 @@ const float StaggeredGrid::get(float x, float y)
       {
         if (yi == 0)
           return _data(xi, 1);
-        else if (yi == _y_res * 2)
+        if (yi == _y_res * 2)
           return _data(xi, _y_res * 2 - 1);
-        else
-          return (_data(xi, yi-1) + _data(xi, yi+1)) * 0.5f;
-      }
-      else
-      {
-        if (xi == 0)
-          return _data(0, yi);
-        else if (xi == _x_res)
-          return _data(_x_res-1, yi);
-        else
-          return (_data(xi-1, yi) + _data(xi, yi)) * 0.5f;
-      }
-    }
-    else
-      return _data(xi, yi);
-  }
-  else
-  {
-    if (y_border)
-      return _data(xi, yi);
-    else
-    {
-      if (_axis)
         return (_data(xi, yi-1) + _data(xi, yi+1)) * 0.5f;
-      else
-        return (_data(xi, yi) + _data(xi+1, yi)) * 0.5f;
+      }
+      if (xi == 0)
+        return _data(0, yi);
+      if (xi == _x_res)
+        return _data(_x_res-1, yi);
+      return (_data(xi-1, yi) + _data(xi, yi)) * 0.5f;
     }
+    return _data(xi, yi);
   }
+  if (y_border)
+    return _data(xi, yi);
+  if (_axis)
+    return (_data(xi, yi-1) + _data(xi, yi+1)) * 0.5f;
+  return (_data(xi, yi) + _data(xi+1, yi)) * 0.5f;
 }
 
 float StaggeredGrid::absmax() const

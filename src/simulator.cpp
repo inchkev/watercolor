@@ -12,6 +12,7 @@
 #include <GL/glut.h>
 #endif
 
+#include "util/ReadPPM.h"
 #include "util/FFMPEG_MOVIE.h"
 
 using namespace std;
@@ -343,7 +344,7 @@ void glutMouseClick(int button, int state, int x, int y)
       for (int sy = max(0, y_field - 5); sy < min(y_res, y_field + 5); sy++)
       {
         simulator.M()(sx,sy) = 1.0f;
-        simulator.g()(sx,sy) = 0.3f;
+        simulator.pigments()[0]->g(sx,sy) = 0.3f;
       }
 
     // make sure nothing else is called
@@ -470,7 +471,8 @@ int main(int argc, char **argv)
 void runEverytime()
 {
   simulator.step();
-  field = simulator.d();
+  field = simulator.pigments()[0]->d + simulator.pigments()[0]->g;
+  /* field = simulator.pigments()[0]->d; */
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -479,13 +481,23 @@ void runEverytime()
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
+  float* paper = new float[3 * x_res * y_res];
+  readPPM("../data/h_1.ppm", x_res, y_res, paper);
+  simulator.setPaper(paper);
+
   // larger wet area mask
-  for (int y = 0.20 * y_res; y < 0.8 * y_res; y++)
-    for (int x = 0.20 * x_res; x < 0.8 * x_res; x++)
+  for (int y = 0.10 * y_res; y < 0.4 * y_res; y++)
+    for (int x = 0.10 * x_res; x < 0.4 * x_res; x++)
+      simulator.M()(x, y) = 1.0;
+  for (int y = 0.60 * y_res; y < 0.9 * y_res; y++)
+    for (int x = 0.60 * x_res; x < 0.9 * x_res; x++)
       simulator.M()(x, y) = 1.0;
 
   // pigment in center square
-  for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
-    for (int x = 0.40 * x_res; x < 0.60 * x_res; x++)
-      simulator.g()(x, y) = 0.01;
+  for (int y = 0.20 * y_res; y < 0.30 * y_res; y++)
+    for (int x = 0.20 * x_res; x < 0.30 * x_res; x++)
+      simulator.pigments()[0]->g(x, y) = 0.05;
+  for (int y = 0.70 * y_res; y < 0.80 * y_res; y++)
+    for (int x = 0.70 * x_res; x < 0.80 * x_res; x++)
+      simulator.pigments()[0]->g(x, y) = 0.05;
 }
