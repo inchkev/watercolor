@@ -27,7 +27,6 @@ void readPPM(const string& filename, int& xRes, int& yRes, float*& values)
     cout << " The header of " << filename.c_str() << " may be improperly formatted." << endl;
     cout << " The program will continue, but you may want to check your input. " << endl;
   }
-  cout << xRes << " " << yRes << endl;
   int totalCells = xRes * yRes;
 
   // grab the pixel values
