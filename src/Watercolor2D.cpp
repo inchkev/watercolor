@@ -9,7 +9,6 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
   _v(x_res, y_res, 1)
 {
   _dt = 0.01;
-  _dx = 0.5;
 
   _buffer = new float[3 * _x_res * _y_res];
   _paper = new float[3 * _x_res * _y_res];

@@ -53,7 +53,6 @@ protected:
   void render();
 
   int _x_res, _y_res;
-  float _dx;
   float _dt;
 
   // shallow-water layer
