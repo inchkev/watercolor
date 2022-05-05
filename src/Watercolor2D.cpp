@@ -10,8 +10,13 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
 {
   _dt = 0.01;
 
-  _buffer = new float[3 * _x_res * _y_res];
-  _paper = new float[3 * _x_res * _y_res];
+  _buffer = new Eigen::Vector3f*[_x_res];
+  for (int i = 0; i < _x_res; i++)
+    _buffer[i] = new Eigen::Vector3f[_y_res];
+
+  _paper = new Eigen::Vector3f*[_x_res];
+  for (int i = 0; i < _x_res; i++)
+    _paper[i] = new Eigen::Vector3f[_y_res];
 
   _M = Eigen::ArrayXXf::Zero(x_res, y_res);
   _pressure = Eigen::ArrayXXf::Zero(x_res, y_res);
@@ -46,8 +51,8 @@ void Watercolor2D::setPaper(float*& paper)
       const int index = 3 * (x * _y_res + y);
       for (int i = 0; i < 3; i++)
       {
-        _paper[index + i] = paper[index + i];
-        _buffer[index + i] = paper[index + i];
+        _paper[x][y][i] = paper[index + i];
+        _buffer[x][y][i] = paper[index + i];
         sum += paper[index + i];
       }
       _h(x,y) = sum / 3;

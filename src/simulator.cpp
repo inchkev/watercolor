@@ -24,7 +24,7 @@ int y_res = 200;
 
 // the field being drawn and manipulated
 Eigen::ArrayXXf field(x_res, y_res);
-float const *frame_buffer;
+Eigen::Vector3f** buffer;
 
 // the simulation object
 /* Watercolor2D simulator(x_res, y_res); */
@@ -154,11 +154,28 @@ void updateTexture(Eigen::ArrayXXf &texture)
   glEnable(GL_TEXTURE_2D);
 }
 
-void updateTexture(const int rows, const int cols, const float* &flat_data)
+void updateTexture(const int rows, const int cols, Eigen::Vector3f** &buffer)
 {
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+  // create a flattened array of the color values
+  float* flat_data = new float[rows * cols * 3];
+
+  int index = 0;
+  for (int x = 0; x < rows; x++)
+    for (int y = 0; y < cols; y++)
+      {
+        flat_data[index] = buffer[x][y][0];
+        flat_data[index + 1] = buffer[x][y][1];
+        flat_data[index + 2] = buffer[x][y][2];
+        index += 3;
+      }
+
+  // send the data to the texture
   glTexImage2D(GL_TEXTURE_2D, 0, 3, rows, cols, 0, GL_RGB, GL_FLOAT, flat_data);
+
+  // clean up!
+  delete[] flat_data;
 
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -421,7 +438,7 @@ void glutIdle()
   }
 
   /* updateTexture(field); */
-  updateTexture(x_res, y_res, frame_buffer);
+  updateTexture(x_res, y_res, buffer);
   glutPostRedisplay();
 }
 
@@ -490,8 +507,8 @@ int main(int argc, char **argv)
 void runEverytime()
 {
   simulator->step();
-  field = simulator->pigments()[0]->d + simulator->pigments()[0]->g;
-  frame_buffer = simulator->frameBuffer();
+  /* field = simulator->pigments()[0]->d + simulator->pigments()[0]->g; */
+  buffer = simulator->frameBuffer();
 }
 
 ///////////////////////////////////////////////////////////////////////

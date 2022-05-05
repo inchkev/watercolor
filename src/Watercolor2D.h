@@ -26,12 +26,19 @@ public:
     for (Pigment* p: _pigments)
       delete p;
     _pigments.clear();
+    for (int i = 0; i < _x_res; i++)
+    {
+      delete[] _buffer[i];
+      delete[] _paper[i];
+    }
+    delete[] _buffer;
+    delete[] _paper;
   };
+
+  Eigen::Vector3f**& frameBuffer() { return _buffer; };
 
   void setPaper(float*& paper);
   void step();
-
-  const float* frameBuffer() { return _buffer; };
 
   int& x_res()            { return _x_res; };
   const int x_res() const { return _x_res; };
@@ -75,8 +82,8 @@ protected:
   Eigen::ArrayXXf _s;         // water saturation s of the paper
   Eigen::ArrayXXf _c;         // fluid-holding capacity c of the paper
 
-  float* _buffer; // x * y * 3
-  float* _paper;  // x * y * 3
+  Eigen::Vector3f** _buffer;
+  Eigen::Vector3f** _paper;
 };
 
 #endif
