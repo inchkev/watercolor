@@ -1,5 +1,5 @@
-#ifndef READ_PPM_H
-#define READ_PPM_H
+#ifndef READ_WRITE_PPM_H
+#define READ_WRITE_PPM_H
 
 #include <string>
 

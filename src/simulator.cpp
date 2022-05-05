@@ -13,7 +13,7 @@
 #include <GL/glut.h>
 #endif
 
-#include "util/ReadPPM.h"
+#include "util/ReadWritePPM.h"
 #include "util/FFMPEG_MOVIE.h"
 
 using namespace std;
@@ -24,6 +24,7 @@ int y_res = 200;
 
 // the field being drawn and manipulated
 Eigen::ArrayXXf field(x_res, y_res);
+float const *frame_buffer;
 
 // the simulation object
 /* Watercolor2D simulator(x_res, y_res); */
@@ -142,7 +143,22 @@ void printGlString(string output)
 void updateTexture(Eigen::ArrayXXf &texture)
 {
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
   glTexImage2D(GL_TEXTURE_2D, 0, 3, texture.rows(), texture.cols(), 0, GL_LUMINANCE, GL_FLOAT, texture.data());
+
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+  glEnable(GL_TEXTURE_2D);
+}
+
+void updateTexture(const int rows, const int cols, const float* &flat_data)
+{
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, rows, cols, 0, GL_RGB, GL_FLOAT, flat_data);
 
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -404,7 +420,8 @@ void glutIdle()
     movie.addFrameGL();
   }
 
-  updateTexture(field);
+  /* updateTexture(field); */
+  updateTexture(x_res, y_res, frame_buffer);
   glutPostRedisplay();
 }
 
@@ -473,8 +490,8 @@ int main(int argc, char **argv)
 void runEverytime()
 {
   simulator->step();
-  /* field = simulator->pigments()[0]->d + simulator.pigments()[0]->g; */
-  field = simulator->pigments()[0]->d;
+  field = simulator->pigments()[0]->d + simulator->pigments()[0]->g;
+  frame_buffer = simulator->frameBuffer();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -483,6 +500,15 @@ void runEverytime()
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
+  // read and set paper texture
+  float* paper = NULL;
+  int x, y;
+  readPPM("../data/h_1.ppm", x, y, paper);
+  // clamp values to [0,1]
+  for (int i = 0; i < x * y * 3; i++)
+    paper[i] /= 255.0f;
+  simulator->setPaper(paper);
+
   // larger wet area mask
   for (int y = 0.10 * y_res; y < 0.4 * y_res; y++)
     for (int x = 0.10 * x_res; x < 0.4 * x_res; x++)
@@ -498,10 +524,4 @@ void runOnce()
   for (int y = 0.70 * y_res; y < 0.80 * y_res; y++)
     for (int x = 0.70 * x_res; x < 0.80 * x_res; x++)
       simulator->pigments()[0]->g(x, y) = 0.05;
-
-  /* float* paper = new float[3 * x_res * y_res]; */
-  float* paper = NULL;
-  int x, y;
-  readPPM("../data/h_1.ppm", x, y, paper);
-  simulator->setPaper(paper);
 }

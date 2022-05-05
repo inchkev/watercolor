@@ -1,4 +1,4 @@
-#include "ReadPPM.h"
+#include "ReadWritePPM.h"
 #include <iostream>
 #include <cstdio>
 

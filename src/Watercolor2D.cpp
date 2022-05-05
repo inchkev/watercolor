@@ -51,7 +51,7 @@ void Watercolor2D::setPaper(float*& paper)
         _buffer[index + i] = paper[index + i];
         sum += paper[index + i];
       }
-      _h(x,y) = sum / (256.0f * 3);
+      _h(x,y) = sum / 3;
     }
 
   // calculate gradients
@@ -341,4 +341,5 @@ void Watercolor2D::simulateCapillaryFlow()
 
 void Watercolor2D::render()
 {
+  
 }

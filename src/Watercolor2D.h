@@ -31,7 +31,7 @@ public:
   void setPaper(float*& paper);
   void step();
 
-  /* const float* buffer() { return _buffer; }; */
+  const float* frameBuffer() { return _buffer; };
 
   int& x_res()            { return _x_res; };
   const int x_res() const { return _x_res; };

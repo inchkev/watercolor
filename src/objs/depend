@@ -184,7 +184,7 @@ objs/simulator.o: simulator.cpp FIELD_2D.h Watercolor2D.h \
   /usr/local/include/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
   /usr/local/include/Eigen/src/Eigenvalues/./RealQZ.h \
   /usr/local/include/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h \
-  Grid/StaggeredGrid.h util/FFMPEG_MOVIE.h
+  Grid/StaggeredGrid.h util/ReadWritePPM.h util/FFMPEG_MOVIE.h
 objs/StaggeredGrid.o: Grid/StaggeredGrid.cpp Grid/StaggeredGrid.h \
   /usr/local/include/Eigen/Dense /usr/local/include/Eigen/Core \
   /usr/local/include/Eigen/src/Core/util/DisableStupidWarnings.h \
@@ -557,7 +557,7 @@ objs/GaussianBlur.o: util/GaussianBlur.cpp util/GaussianBlur.h \
   /usr/local/include/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
   /usr/local/include/Eigen/src/Eigenvalues/./RealQZ.h \
   /usr/local/include/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h
-objs/ReadPPM.o: util/ReadPPM.cpp util/ReadPPM.h
+objs/ReadWritePPM.o: util/ReadWritePPM.cpp util/ReadWritePPM.h
 objs/Watercolor2D.o: Watercolor2D.cpp Watercolor2D.h \
   /usr/local/include/Eigen/Dense /usr/local/include/Eigen/Core \
   /usr/local/include/Eigen/src/Core/util/DisableStupidWarnings.h \
