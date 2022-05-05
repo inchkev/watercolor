@@ -2,6 +2,7 @@
 #include "Watercolor2D.h"
 #include <cmath>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #if _WIN32
@@ -18,14 +19,15 @@
 using namespace std;
 
 // resolution of the field
-int x_res = 100;
-int y_res = 100;
+int x_res = 200;
+int y_res = 200;
 
 // the field being drawn and manipulated
 Eigen::ArrayXXf field(x_res, y_res);
 
 // the simulation object
-Watercolor2D simulator(x_res, y_res);
+/* Watercolor2D simulator(x_res, y_res); */
+Watercolor2D* simulator = new Watercolor2D(x_res, y_res);
 
 // the resolution of the OpenGL window -- independent of the field resolution
 int x_screen_res = 850;
@@ -343,8 +345,8 @@ void glutMouseClick(int button, int state, int x, int y)
     for (int sx = max(0, x_field - 5); sx < min(x_res, x_field + 5); sx++)
       for (int sy = max(0, y_field - 5); sy < min(y_res, y_field + 5); sy++)
       {
-        simulator.M()(sx,sy) = 1.0f;
-        simulator.pigments()[0]->g(sx,sy) = 0.3f;
+        simulator->M()(sx,sy) = 1.0f;
+        simulator->pigments()[0]->g(sx,sy) = 0.3f;
       }
 
     // make sure nothing else is called
@@ -470,9 +472,9 @@ int main(int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////
 void runEverytime()
 {
-  simulator.step();
-  field = simulator.pigments()[0]->d + simulator.pigments()[0]->g;
-  /* field = simulator.pigments()[0]->d; */
+  simulator->step();
+  /* field = simulator->pigments()[0]->d + simulator.pigments()[0]->g; */
+  field = simulator->pigments()[0]->d;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -481,23 +483,25 @@ void runEverytime()
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
-  float* paper = new float[3 * x_res * y_res];
-  readPPM("../data/h_1.ppm", x_res, y_res, paper);
-  simulator.setPaper(paper);
-
   // larger wet area mask
   for (int y = 0.10 * y_res; y < 0.4 * y_res; y++)
     for (int x = 0.10 * x_res; x < 0.4 * x_res; x++)
-      simulator.M()(x, y) = 1.0;
+      simulator->M()(x, y) = 1.0;
   for (int y = 0.60 * y_res; y < 0.9 * y_res; y++)
     for (int x = 0.60 * x_res; x < 0.9 * x_res; x++)
-      simulator.M()(x, y) = 1.0;
+      simulator->M()(x, y) = 1.0;
 
   // pigment in center square
   for (int y = 0.20 * y_res; y < 0.30 * y_res; y++)
     for (int x = 0.20 * x_res; x < 0.30 * x_res; x++)
-      simulator.pigments()[0]->g(x, y) = 0.05;
+      simulator->pigments()[0]->g(x, y) = 0.05;
   for (int y = 0.70 * y_res; y < 0.80 * y_res; y++)
     for (int x = 0.70 * x_res; x < 0.80 * x_res; x++)
-      simulator.pigments()[0]->g(x, y) = 0.05;
+      simulator->pigments()[0]->g(x, y) = 0.05;
+
+  /* float* paper = new float[3 * x_res * y_res]; */
+  float* paper = NULL;
+  int x, y;
+  readPPM("../data/h_1.ppm", x, y, paper);
+  simulator->setPaper(paper);
 }

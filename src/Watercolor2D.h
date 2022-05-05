@@ -31,7 +31,7 @@ public:
   void setPaper(float*& paper);
   void step();
 
-  const float* buffer() { return _buffer; };
+  /* const float* buffer() { return _buffer; }; */
 
   int& x_res()            { return _x_res; };
   const int x_res() const { return _x_res; };
@@ -61,20 +61,16 @@ protected:
   StaggeredGrid _u;           // velocity in the x direction
   StaggeredGrid _v;           // velocity in the y direction
   Eigen::ArrayXXf _pressure;  // pressure
-  // TODO: turn _g and _d into separate data structures for multiple pigments
+
   Eigen::ArrayXXf _h;         // paper height
-  Eigen::ArrayXXf _dhx; // gradient of paper height
-  Eigen::ArrayXXf _dhy; // gradient of paper height
+  Eigen::ArrayXXf _dhx;       // gradient of paper height
+  Eigen::ArrayXXf _dhy;       // gradient of paper height
+
   float _viscosity;           // viscosity mu
   float _viscous_drag;        // viscous drag kappa
 
   // pigment-deposition layer
   std::vector<Pigment*> _pigments;
-  /* Eigen::ArrayXXf _g;         // pigment concentration (just 1) */
-  /* Eigen::ArrayXXf _d;         // deposited pigment concentration (again, just 1) */
-  /* float _p_density;           // pigment density rho */
-  /* float _p_staining_power;    // pigment staining power omega */
-  /* float _p_granularity;       // pigment granularity gamma */
 
   // capillary layer
   Eigen::ArrayXXf _s;         // water saturation s of the paper

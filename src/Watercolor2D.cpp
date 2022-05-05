@@ -11,8 +11,8 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
   _dt = 0.01;
   _dx = 0.5;
 
-  /* _buffer = new float[3 * _x_res * _y_res]; */
-  /* _paper = new float[3 * _x_res * _y_res]; */
+  _buffer = new float[3 * _x_res * _y_res];
+  _paper = new float[3 * _x_res * _y_res];
 
   _M = Eigen::ArrayXXf::Zero(x_res, y_res);
   _pressure = Eigen::ArrayXXf::Zero(x_res, y_res);
@@ -40,7 +40,6 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
 
 void Watercolor2D::setPaper(float*& paper)
 {
-  std::cout << "setPaper----------" << std::endl;
   for (int x = 0; x < _x_res; x++)
     for (int y = 0; y < _y_res; y++)
     {
@@ -48,27 +47,21 @@ void Watercolor2D::setPaper(float*& paper)
       const int index = 3 * (x * _y_res + y);
       for (int i = 0; i < 3; i++)
       {
-        /* _paper[index + i] = paper[index + i]; */
-        /* _buffer[index + i] = paper[index + i]; */
+        _paper[index + i] = paper[index + i];
+        _buffer[index + i] = paper[index + i];
         sum += paper[index + i];
       }
-      _h(x,y) = sum / (256.0f*3);
+      _h(x,y) = sum / (256.0f * 3);
     }
 
+  // calculate gradients
   _dhx = _h.rightCols(_h.cols() - 1) - _h.leftCols(_h.cols() - 1);
   _dhy = _h.bottomRows(_h.rows() - 1) - _h.topRows(_h.rows() - 1);
-  /* std::cout << _dhx.cols() << " " << _dhx.rows() << std::endl; */
-  /* std::cout << _dhy.cols() << " " << _dhy.rows() << std::endl; */
-  /* std::cout << _dhx.maxCoeff() <<" "<< _dhx.minCoeff() << std::endl; */
 
-  /* // ugly */
+  // ugly hack to make both 200x200
+  // TODO: cleaner boundary condition handling
   _dhx.resize(_x_res, _y_res);
   _dhy.resize(_x_res, _y_res);
-  /* std::cout << _dhx.cols() << " " << _dhx.rows() << std::endl; */
-  /* std::cout << _dhy.cols() << " " << _dhy.rows() << std::endl; */
-  /* std::cout << _dhx.maxCoeff() <<" "<< _dhx.minCoeff() << std::endl; */
-
-  /* std::cout << _h.maxCoeff() <<" "<< _h.minCoeff() << std::endl; */
 }
 
 void Watercolor2D::step()

@@ -744,5 +744,5 @@ objs/Watercolor2D.o: Watercolor2D.cpp Watercolor2D.h \
   /usr/local/include/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
   /usr/local/include/Eigen/src/Eigenvalues/./RealQZ.h \
   /usr/local/include/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h \
-  Grid/StaggeredGrid.h util/GaussianBlur.h util/ReadPPM.h
+  Grid/StaggeredGrid.h util/GaussianBlur.h
 objs/FIELD_2D.o: FIELD_2D.cpp FIELD_2D.h
