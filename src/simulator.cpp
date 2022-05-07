@@ -19,8 +19,8 @@
 using namespace std;
 
 // resolution of the field
-int x_res = 100;
-int y_res = 100;
+int x_res = 110;
+int y_res = 110;
 
 // the field being drawn and manipulated
 Eigen::ArrayXXf field(x_res, y_res);
