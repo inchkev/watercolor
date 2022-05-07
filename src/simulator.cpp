@@ -19,8 +19,8 @@
 using namespace std;
 
 // resolution of the field
-int x_res = 200;
-int y_res = 200;
+int x_res = 100;
+int y_res = 100;
 
 // the field being drawn and manipulated
 Eigen::ArrayXXf field(x_res, y_res);
@@ -38,6 +38,8 @@ int y_screen_res = 850;
 string windowLabel("Computer Generated Watercolor");
 
 FFMPEG_MOVIE movie;
+
+int demo = 0;
 
 // mouse tracking variables
 int x_mouse = -1;
@@ -352,7 +354,7 @@ void glutKeyboard(unsigned char key, int x, int y)
     count++;
   } break;
   case 'q':
-    movie.streamWriteMovie("simulator.mov");
+    /* movie.streamWriteMovie("simulator.mov"); */
     exit(0);
     break;
   default:
@@ -375,11 +377,11 @@ void glutMouseClick(int button, int state, int x, int y)
     refreshMouseFieldIndex(x, y);
 
     // zero out a 10x10 square of chemical b
-    for (int sx = max(0, x_field - 5); sx < min(x_res, x_field + 5); sx++)
-      for (int sy = max(0, y_field - 5); sy < min(y_res, y_field + 5); sy++)
+    for (int sx = max(0, x_field - 2); sx < min(x_res, x_field + 2); sx++)
+      for (int sy = max(0, y_field - 2); sy < min(y_res, y_field + 2); sy++)
       {
         simulator->M()(sx,sy) = 1.0f;
-        simulator->pigments()[0]->g(sx,sy) = 0.3f;
+        simulator->pigments()[0]->g(sx,sy) = 1.0f;
       }
 
     // make sure nothing else is called
@@ -488,6 +490,8 @@ int main(int argc, char **argv)
     eye_center[1] = yLength * 0.5;
   }
 
+  demo = std::stoi(argv[1]);
+
   printCommands();
 
   runOnce();
@@ -508,6 +512,10 @@ void runEverytime()
 {
   simulator->step();
   /* field = simulator->pigments()[0]->d + simulator->pigments()[0]->g; */
+  /* field = simulator->pigments()[0]->d; */
+  /* field = simulator->s(); */
+  /* field = simulator->p(); */
+  /* field = simulator->M(); */
   buffer = simulator->frameBuffer();
 }
 
@@ -520,25 +528,104 @@ void runOnce()
   // read and set paper texture
   float* paper = NULL;
   int x, y;
-  readPPM("../data/h_1.ppm", x, y, paper);
+  readPPM("../data/h_2.ppm", x, y, paper);
   // clamp values to [0,1]
   for (int i = 0; i < x * y * 3; i++)
     paper[i] /= 255.0f;
-  simulator->setPaper(paper);
+  simulator->setPaper(paper, x, y);
 
-  // larger wet area mask
-  for (int y = 0.10 * y_res; y < 0.4 * y_res; y++)
-    for (int x = 0.10 * x_res; x < 0.4 * x_res; x++)
-      simulator->M()(x, y) = 1.0;
-  for (int y = 0.60 * y_res; y < 0.9 * y_res; y++)
-    for (int x = 0.60 * x_res; x < 0.9 * x_res; x++)
-      simulator->M()(x, y) = 1.0;
+  if (demo == 1)
+  {
+    for (int x = 0.30 * x_res; x < 0.70 * x_res; x++)
+      for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+        simulator->M()(x, y) = 1.0;
 
-  // pigment in center square
-  for (int y = 0.20 * y_res; y < 0.30 * y_res; y++)
-    for (int x = 0.20 * x_res; x < 0.30 * x_res; x++)
-      simulator->pigments()[0]->g(x, y) = 0.05;
-  for (int y = 0.70 * y_res; y < 0.80 * y_res; y++)
-    for (int x = 0.70 * x_res; x < 0.80 * x_res; x++)
-      simulator->pigments()[0]->g(x, y) = 0.05;
+    for (int x = 0.4 * x_res; x < 0.6 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[0]->g(x, y) = .5;
+  }
+  else if (demo == 2)
+  {
+    for (int x = 0.30 * x_res; x < 0.70 * x_res; x++)
+      for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+        simulator->M()(x, y) = 1.0;
+
+    for (int x = 0.4 * x_res; x < 0.6 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[0]->g(x, y) = 2.5;
+  }
+  else if (demo == 3)
+  {
+    float* paper = NULL;
+    int x, y;
+    readPPM("../data/h_1.ppm", x, y, paper);
+    // clamp values to [0,1]
+    for (int i = 0; i < x * y * 3; i++)
+      paper[i] /= 255.0f;
+    simulator->setPaper(paper, x, y);
+
+    for (int x = 0.30 * x_res; x < 0.70 * x_res; x++)
+      for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+        simulator->M()(x, y) = 1.0;
+
+    for (int x = 0.4 * x_res; x < 0.6 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[0]->g(x, y) = 2.5;
+  }
+  else if (demo == 4)
+  {
+    for (int x = 0.30 * x_res; x < 0.70 * x_res; x++)
+      for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+        simulator->M()(x, y) = 1.0;
+
+    for (int x = 0.4 * x_res; x < 0.6 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[1]->g(x, y) = 2.5;
+  }
+  else if (demo == 5)
+  {
+    // larger wet area mask
+    for (int x = 0.10 * x_res; x < 0.90 * x_res; x++)
+      for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+        simulator->M()(x, y) = 1.0;
+    for (int y = 0.60 * y_res; y < 0.9 * y_res; y++)
+      for (int x = 0.60 * x_res; x < 0.9 * x_res; x++)
+        simulator->M()(x, y) = 1.0;
+
+    // pigment in center square
+    for (int x = 0.25 * x_res; x < 0.45 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[1]->g(x, y) = .5;
+    for (int x = 0.55 * x_res; x < 0.75 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[0]->g(x, y) = .9;
+  }
+  else if (demo == 6)
+  {
+    // larger wet area mask
+    for (int x = 0.10 * x_res; x < 0.90 * x_res; x++)
+      for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+        simulator->M()(x, y) = 1.0;
+    for (int y = 0.60 * y_res; y < 0.9 * y_res; y++)
+      for (int x = 0.60 * x_res; x < 0.9 * x_res; x++)
+        simulator->M()(x, y) = 1.0;
+
+    // pigment in center square
+    for (int x = 0.25 * x_res; x < 0.45 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[1]->g(x, y) = 2.5;
+    for (int x = 0.55 * x_res; x < 0.75 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[0]->g(x, y) = 2.9;
+  }
+  else if (demo == 7)
+  {
+    for (int x = 0.20 * x_res; x < 0.80 * x_res; x++)
+      for (int y = 0.20 * y_res; y < 0.80 * y_res; y++)
+        simulator->M()(x, y) = 1.0;
+
+    for (int x = 0.4 * x_res; x < 0.6 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+        simulator->pigments()[1]->g(x, y) = 1.5;
+  }
 }

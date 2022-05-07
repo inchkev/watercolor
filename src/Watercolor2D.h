@@ -11,6 +11,7 @@ struct Pigment
   Eigen::ArrayXXf d;    // deposited pigment concentration
   Eigen::Vector3f K;    // K coefficient in KM theory
   Eigen::Vector3f S;    // S coefficient in KM theory
+  Eigen::Vector3f color;
   float density;        // pigment density rho
   float staining_power; // pigment staining power omega
   float granularity;    // pigment granularity gamma
@@ -37,7 +38,7 @@ public:
 
   Eigen::Vector3f**& frameBuffer() { return _buffer; };
 
-  void setPaper(float*& paper);
+  void setPaper(float*& paper, const int paper_x, const int paper_y);
   void step();
 
   int& x_res()            { return _x_res; };
@@ -49,6 +50,10 @@ public:
   const std::vector<Pigment*> pigments() const  { return _pigments; };
   Eigen::ArrayXXf& M()            { return _M; };
   const Eigen::ArrayXXf M() const { return _M; };
+  Eigen::ArrayXXf& s()            { return _s; };
+  const Eigen::ArrayXXf s() const { return _s; };
+  Eigen::ArrayXXf& p()            { return _pressure; };
+  const Eigen::ArrayXXf p() const { return _pressure; };
 protected:
   void updateVelocities();
     void enforceBoundaryConditions();
@@ -81,6 +86,8 @@ protected:
   // capillary layer
   Eigen::ArrayXXf _s;         // water saturation s of the paper
   Eigen::ArrayXXf _c;         // fluid-holding capacity c of the paper
+  float _c_max;
+  float _c_min;
 
   Eigen::Vector3f** _buffer;
   Eigen::Vector3f** _paper;
