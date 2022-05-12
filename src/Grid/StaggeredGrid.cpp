@@ -75,8 +75,8 @@ StaggeredGrid& StaggeredGrid::operator-=(const Eigen::ArrayXXf a)
 
 float& StaggeredGrid::operator()(float x, float y)
 {
-  assert (x >= -0.5f && x <= (float)_x_res + 0.5f);
-  assert (y >= -0.5f && y <= (float)_y_res + 0.5f);
+  assert (x >= -0.5f && x <= (float)_x_res - 0.5f);
+  assert (y >= -0.5f && y <= (float)_y_res - 0.5f);
 
   int xi = (int) (x + 0.5f);
   int yi = (int) (y * 2.0f) + 1;
@@ -111,8 +111,8 @@ float& StaggeredGrid::operator()(float x, float y)
 
 const float StaggeredGrid::operator()(float x, float y) const
 {
-  assert (x >= -0.5f && x <= (float)_x_res + 0.5f);
-  assert (y >= -0.5f && y <= (float)_y_res + 0.5f);
+  assert (x >= -0.5f && x <= (float)_x_res - 0.5f);
+  assert (y >= -0.5f && y <= (float)_y_res - 0.5f);
 
   int xi = (int) (x + 0.5f);
   int yi = (int) (y * 2.0f) + 1;
@@ -148,9 +148,9 @@ const float StaggeredGrid::operator()(float x, float y) const
 
 const float StaggeredGrid::get(float x, float y)
 {
-  assert (x >= -0.5f && x <= (float)_x_res + 0.5f);
-  assert (y >= -0.5f && y <= (float)_y_res + 0.5f);
-  if (x < -0.5f || x > (float)_x_res + 0.5f || y < -0.5f || y > (float)_y_res + 0.5f)
+  assert (x >= -0.5f && x <= (float)_x_res - 0.5f);
+  assert (y >= -0.5f && y <= (float)_y_res - 0.5f);
+  if (x < -0.5f || x > (float)_x_res - 0.5f || y < -0.5f || y > (float)_y_res - 0.5f)
   {
     std::cout << "INVALID " << x << ", " << y << std::endl;
     throw;
