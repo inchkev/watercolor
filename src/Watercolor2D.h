@@ -15,6 +15,10 @@ struct Pigment
   float density;        // pigment density rho
   float staining_power; // pigment staining power omega
   float granularity;    // pigment granularity gamma
+  Eigen::Vector3f a;
+  Eigen::Vector3f b;
+  Eigen::Vector3f R;
+  Eigen::Vector3f T;
 };
 
 class Watercolor2D
