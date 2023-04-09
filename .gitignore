@@ -1,5 +1,6 @@
 ext/
 bin/
+.vscode/*
 
 # Prerequisites
 *.d

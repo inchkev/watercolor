@@ -19,8 +19,10 @@
 using namespace std;
 
 // resolution of the field
-int x_res = 100;
-int y_res = 100;
+int x_res = 150;
+int y_res = 150;
+/* int x_res = 300; */
+/* int y_res = 300; */
 
 // the field being drawn and manipulated
 Eigen::ArrayXXf field(x_res, y_res);
@@ -377,11 +379,11 @@ void glutMouseClick(int button, int state, int x, int y)
     refreshMouseFieldIndex(x, y);
 
     // zero out a 10x10 square of chemical b
-    for (int sx = max(0, x_field - 3); sx < min(x_res, x_field + 3); sx++)
-      for (int sy = max(0, y_field - 3); sy < min(y_res, y_field + 3); sy++)
+    for (int sx = max(0, x_field - 5); sx < min(x_res, x_field + 5); sx++)
+      for (int sy = max(0, y_field - 5); sy < min(y_res, y_field + 5); sy++)
       {
         simulator->M()(sx,sy) = 1.0f;
-        simulator->pigments()[0]->g(sx,sy) = 1.2f;
+        simulator->pigments()[0]->g(sx,sy) = 1.5f;
       }
 
     // make sure nothing else is called
@@ -439,7 +441,7 @@ void glutIdle()
     movie.addFrameGL();
   }
 
-  /* updateTexture(field); */
+  updateTexture(field);
   updateTexture(x_res, y_res, buffer);
   glutPostRedisplay();
 }
@@ -529,7 +531,7 @@ void runOnce()
   // read and set paper texture
   float* paper = NULL;
   int x, y;
-  readPPM("../data/h_2.ppm", x, y, paper);
+  readPPM("../data/h_1.ppm", x, y, paper);
   // clamp values to [0,1]
   for (int i = 0; i < x * y * 3; i++)
     paper[i] /= 255.0f;
@@ -559,7 +561,7 @@ void runOnce()
   {
     float* paper = NULL;
     int x, y;
-    readPPM("../data/h_1.ppm", x, y, paper);
+    readPPM("../data/h_2.ppm", x, y, paper);
     // clamp values to [0,1]
     for (int i = 0; i < x * y * 3; i++)
       paper[i] /= 255.0f;
@@ -593,7 +595,7 @@ void runOnce()
     // pigment in center square
     for (int x = 0.25 * x_res; x < 0.45 * x_res; x++)
       for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
-        simulator->pigments()[1]->g(x, y) = .5;
+        simulator->pigments()[1]->g(x, y) = .9;
     for (int x = 0.55 * x_res; x < 0.75 * x_res; x++)
       for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
         simulator->pigments()[0]->g(x, y) = .9;
@@ -608,10 +610,10 @@ void runOnce()
     // pigment in center square
     for (int x = 0.25 * x_res; x < 0.45 * x_res; x++)
       for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
-        simulator->pigments()[1]->g(x, y) = 2.5;
+        simulator->pigments()[1]->g(x, y) = 3.0;
     for (int x = 0.55 * x_res; x < 0.75 * x_res; x++)
       for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
-        simulator->pigments()[0]->g(x, y) = 2.9;
+        simulator->pigments()[0]->g(x, y) = 3.0;
   }
   else if (demo == 7)
   {

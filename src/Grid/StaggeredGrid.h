@@ -31,7 +31,7 @@ public:
   Eigen::ArrayXXf& data() { return _data; };
   int x_res() const { return _x_res; };
   int y_res() const { return _y_res; };
-  int axis() const { return _axis; };
+  int is_y_axis() const { return _is_y_axis; };
 
   float absmax() const;
   float max() const;
@@ -39,7 +39,7 @@ public:
 private:
   int _x_res;
   int _y_res;
-  bool _axis; // false = x, true = y
+  bool _is_y_axis; // false = x, true = y
 
   Eigen::ArrayXXf _data;
 };

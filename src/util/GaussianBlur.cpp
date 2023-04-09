@@ -4,9 +4,25 @@
 
 using std::vector;
 
+// lookup table of ideal averaging filter widths for n=3. replaces
+// w_ideal = std::sqrt(12.0*sigma*sigma/(float)n + 1.0);
+static const float W_IDEAL_N_EQUALS_3[10] = {
+  1.0f,
+  2.23606797749979f,
+  4.123105625617661f,
+  6.082762530298219f,
+  8.06225774829855f,
+  10.04987562112089f,
+  12.041594578792296f,
+  14.035668847618199f,
+  16.0312195418814f,
+  18.027756377319946f,
+};
+
 vector<int> boxesForGauss(int sigma, int n)
 {
-  const float w_ideal = std::sqrt(12.0*sigma*sigma/(float)n + 1.0);
+  // ideal averaging filter width
+  const float w_ideal = W_IDEAL_N_EQUALS_3[sigma]; // std::sqrt(12.0*sigma*sigma/(float)n + 1.0);
   int wl = std::floor(w_ideal);
   if (wl % 2 == 0)
     wl--;

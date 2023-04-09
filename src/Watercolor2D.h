@@ -23,7 +23,6 @@ struct Pigment
 
 class Watercolor2D
 {
-  // TODO: create a pigment class
 public:
   Watercolor2D(const int x_res, const int y_res);
   ~Watercolor2D()
@@ -31,7 +30,7 @@ public:
     for (Pigment* p: _pigments)
       delete p;
     _pigments.clear();
-    for (int i = 0; i < _x_res; i++)
+    for (int i = 0; i < _x_res; ++i)
     {
       delete[] _buffer[i];
       delete[] _paper[i];
@@ -58,6 +57,8 @@ public:
   const Eigen::ArrayXXf s() const { return _s; };
   Eigen::ArrayXXf& p()            { return _pressure; };
   const Eigen::ArrayXXf p() const { return _pressure; };
+  Eigen::ArrayXXf& c()            { return _c; };
+  const Eigen::ArrayXXf c() const { return _c; };
 protected:
   void updateVelocities();
     void enforceBoundaryConditions();
