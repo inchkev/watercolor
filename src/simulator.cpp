@@ -517,8 +517,8 @@ void runEverytime()
   /* field += simulator->pigments()[1]->d + simulator->pigments()[1]->g; */
   /* field = simulator->pigments()[0]->d; */
   // field = simulator->s();
-  /* field = simulator->p(); */
-  field = simulator->M();
+  field = simulator->p();
+  // field = simulator->M();
   buffer = simulator->frameBuffer();
 }
 

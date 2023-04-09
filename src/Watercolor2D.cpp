@@ -165,9 +165,9 @@ void Watercolor2D::updateVelocities()
   _u -= _dhx;
   _v -= _dhy;
 
-  _dt = 0.5f / std::max(_u.absmax(), _v.absmax());
+  _dt = 0.4f / ceil(std::max(_u.absmax(), _v.absmax()));
 
-  for (float t = 0.0f; t < 0.5f; t += _dt)
+  for (float t = 0.0f; t < 0.4f; t += _dt)
   {
     StaggeredGrid u_new(_u);
     StaggeredGrid v_new(_v);
@@ -247,16 +247,15 @@ void Watercolor2D::relaxDivergence()
 
   StaggeredGrid u_new(_u);
   StaggeredGrid v_new(_v);
-  while (1)
-  {
-    delta_max = 0.0f;
+  do {
     u_new = _u;
     v_new = _v;
+    delta_max = 0.0f;
     for (int i = 0; i < _x_res; ++i)
       for (int j = 0; j < _y_res; ++j)
       {
-        float delta = xi * (_u.get(i+0.5f,j) - _u.get(i-0.5f,j) +
-                            _v.get(i,j+0.5f) - _v.get(i,j-0.5f));
+        const float delta = xi * (_u.get(i+0.5f,j) - _u.get(i-0.5f,j) +
+                                  _v.get(i,j+0.5f) - _v.get(i,j-0.5f));
         _pressure(i,j) += delta;
         u_new(i+0.5f,j) += delta;
         u_new(i-0.5f,j) -= delta;
@@ -267,10 +266,7 @@ void Watercolor2D::relaxDivergence()
     _u = u_new;
     _v = v_new;
     ++t;
-
-    if (delta_max <= tau || t >= N)
-      break;
-  }
+  } while (delta_max > tau && t < N);
 }
 
 /**
@@ -286,7 +282,7 @@ void Watercolor2D::relaxDivergence()
  */
 void Watercolor2D::flowOutward()
 {
-  const float eta = 0.04f;
+  const float eta = 0.01f;
   const int gaussian_radius = 4; // K = 9 ish
 
   Eigen::ArrayXXf M_copy = _M;
@@ -307,12 +303,12 @@ void Watercolor2D::flowOutward()
  */
 void Watercolor2D::movePigment()
 {
-  _dt = 0.5f / std::max(_u.absmax(), _v.absmax());
+  _dt = 0.4f / ceil(std::max(_u.absmax(), _v.absmax()));
 
   // when more than one pigment, loop through each pigment
   for (Pigment* pig: _pigments)
   {
-    for (float t = 0.0f; t < 0.5f; t += _dt)
+    for (float t = 0.0f; t < 0.4f; t += _dt)
     {
       Eigen::ArrayXXf g_new = pig->g;
 
@@ -445,9 +441,7 @@ void Watercolor2D::simulateCapillaryFlow()
   // expand wet-area mask if cell's saturation exceeds a threshold sigma
   for (int j = 0; j < _y_res; ++j)
     for (int i = 0; i < _x_res; ++i)
-      if (_M(i,j) < 1.0f && _s(i,j) > sigma)
-      {
-        std::cout << "YOOOOO IT EXPANDED" << std::endl;
+      if (_M(i,j) < 1.0f && _s(i,j) > sigma) {
         _M(i,j) = 1.0f;
       }
 }
