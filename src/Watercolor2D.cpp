@@ -34,9 +34,9 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
   red->K = Eigen::Vector3f(0.22f, 1.47f, 0.57f);
   red->S = Eigen::Vector3f(0.05f, 0.003f, 0.03f);
   red->color = Eigen::Vector3f(0.83f, 0.2f, 0.21f);
-  red->density = 0.02;
-  red->staining_power = 5.5;
-  red->granularity = 0.81;
+  red->density = 0.02f;
+  red->staining_power = 5.5f;
+  red->granularity = 0.81f;
   _pigments.push_back(red);
 
   Pigment* blue = new Pigment();
@@ -45,9 +45,9 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
   blue->K = Eigen::Vector3f(0.86f, 0.86f, 0.06f);
   blue->S = Eigen::Vector3f(0.005f, 0.005f, 0.09f);
   blue->color = Eigen::Vector3f(0.2f, 0.3f, 0.80f);
-  blue->density = 0.01;
-  blue->staining_power = 3.1;
-  blue->granularity = 0.91;
+  blue->density = 0.01f;
+  blue->staining_power = 3.1f;
+  blue->granularity = 0.91f;
   _pigments.push_back(blue);
 
   for (Pigment* pig: _pigments) {
@@ -63,7 +63,7 @@ Watercolor2D::Watercolor2D(const int x_res, const int y_res) :
   /* _c_max = 0.8f; */
   /* _c_min = 0.05f; */
   _c_max = 0.8f;
-  _c_min = 0.3f;
+  _c_min = 0.05f;
 }
 
 void Watercolor2D::setPaper(float*& paper, const int paper_x, const int paper_y)
@@ -286,7 +286,7 @@ void Watercolor2D::relaxDivergence()
  */
 void Watercolor2D::flowOutward()
 {
-  const float eta = 0.02f;
+  const float eta = 0.04f;
   const int gaussian_radius = 4; // K = 9 ish
 
   Eigen::ArrayXXf M_copy = _M;
@@ -379,18 +379,18 @@ void Watercolor2D::simulateCapillaryFlow()
   // these constants are not specified in the paper :(
 
   // alpha is absorption rate - not sure what is appropriate
-  const float alpha = 0.01;
+  const float alpha = 0.10;
 
   // epsilon, minimum saturation a pixel must have before it can diffuse
   // to its neighbors
-  const float epsilon = 0.5;
+  const float epsilon = 0.72;
 
   // delta, saturation value below which a pixel will not receive diffusion
-  const float delta = 0.1;
+  const float delta = -0.01;
 
   // sigma, saturation threshold which determines if wet-area mask _M is
   // expanded or not
-  const float sigma = 0.3;
+  const float sigma = 0.1;
 
   for (int i = 0; i < _x_res; ++i)
     for (int j = 0; j < _y_res; ++j)

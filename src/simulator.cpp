@@ -441,7 +441,7 @@ void glutIdle()
     movie.addFrameGL();
   }
 
-  updateTexture(field);
+  // updateTexture(field);
   updateTexture(x_res, y_res, buffer);
   glutPostRedisplay();
 }
@@ -516,9 +516,9 @@ void runEverytime()
   /* field = simulator->pigments()[0]->d + simulator->pigments()[0]->g; */
   /* field += simulator->pigments()[1]->d + simulator->pigments()[1]->g; */
   /* field = simulator->pigments()[0]->d; */
-  /* field = simulator->s(); */
+  // field = simulator->s();
   /* field = simulator->p(); */
-  /* field = simulator->M(); */
+  field = simulator->M();
   buffer = simulator->frameBuffer();
 }
 
@@ -594,26 +594,32 @@ void runOnce()
 
     // pigment in center square
     for (int x = 0.25 * x_res; x < 0.45 * x_res; x++)
-      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++) {
         simulator->pigments()[1]->g(x, y) = .9;
+      }
     for (int x = 0.55 * x_res; x < 0.75 * x_res; x++)
-      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++) {
         simulator->pigments()[0]->g(x, y) = .9;
+      }
   }
   else if (demo == 6)
   {
     // larger wet area mask
-    for (int x = 0.10 * x_res; x < 0.90 * x_res; x++)
-      for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
-        simulator->M()(x, y) = 1.0;
+    // for (int x = 0.10 * x_res; x < 0.90 * x_res; x++)
+    //   for (int y = 0.30 * y_res; y < 0.70 * y_res; y++)
+    //     simulator->M()(x, y) = 1.0;
 
     // pigment in center square
-    for (int x = 0.25 * x_res; x < 0.45 * x_res; x++)
-      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
-        simulator->pigments()[1]->g(x, y) = 3.0;
-    for (int x = 0.55 * x_res; x < 0.75 * x_res; x++)
-      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++)
-        simulator->pigments()[0]->g(x, y) = 3.0;
+    for (int x = 0.25 * x_res; x < 0.5 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++) {
+        simulator->pigments()[1]->g(x, y) = 1.0;
+        simulator->M()(x, y) = 1.0;
+      }
+    for (int x = 0.5 * x_res; x < 0.75 * x_res; x++)
+      for (int y = 0.40 * y_res; y < 0.60 * y_res; y++) {
+        simulator->pigments()[0]->g(x, y) = 1.0;
+        simulator->M()(x, y) = 1.0;
+      }
   }
   else if (demo == 7)
   {
