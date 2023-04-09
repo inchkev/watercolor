@@ -165,9 +165,9 @@ void Watercolor2D::updateVelocities()
   _u -= _dhx;
   _v -= _dhy;
 
-  _dt = 1.0f / std::max(_u.absmax(), _v.absmax());
+  _dt = 0.5f / std::max(_u.absmax(), _v.absmax());
 
-  for (float t = 0.0f; t < 1.0f; t += _dt)
+  for (float t = 0.0f; t < 0.5f; t += _dt)
   {
     StaggeredGrid u_new(_u);
     StaggeredGrid v_new(_v);
@@ -307,12 +307,12 @@ void Watercolor2D::flowOutward()
  */
 void Watercolor2D::movePigment()
 {
-  _dt = 1.0f / std::max(_u.absmax(), _v.absmax());
+  _dt = 0.5f / std::max(_u.absmax(), _v.absmax());
 
   // when more than one pigment, loop through each pigment
   for (Pigment* pig: _pigments)
   {
-    for (float t = 0.0f; t < 1.0f; t += _dt)
+    for (float t = 0.0f; t < 0.5f; t += _dt)
     {
       Eigen::ArrayXXf g_new = pig->g;
 
